@@ -11,26 +11,6 @@ var app = express();
 var bodyParser = require('body-parser');
 
 
-
-
-/*
-
-THIS FILE IS A SERVER RUN AT BOOT ON QBOOK BY LAUNCHCTL
-
-/Library/LaunchDaemons/local.qbook.simplePingServer.plist
-(yes, I know it's misspelled but I don't want to spend the time to change it.)
-
-IT IS SERVED BY NGINX
-
-/usr/local/conf/nginx.conf
-
-There is an associated BASH script at
-
-~/Scripts/bin/bash/basicPingServerMgmt
-
-*/
-
-
 //START OF moduleFunction() ============================================================
 
 var moduleFunction = function(args) {

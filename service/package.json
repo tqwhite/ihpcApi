@@ -1,0 +1,17 @@
+{
+  "name": "srapi",
+  "version": "1.0.0",
+  "description": "Sunrise Care Planner API application",
+  "main": "startAll.js",
+  "dependencies": {
+    "mongodb": "^2.1.18",
+    "mongoose": "^4.5.2",
+    "multi-ini": "^0.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "TQ White II",
+  "license": "ISC"
+}

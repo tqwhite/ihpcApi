@@ -2,13 +2,15 @@
 'use strict';
 const qtoolsGen = require('qtools');
 const qtools = new qtoolsGen(module);
-const	multiIni = require('multi-ini');
-
-const basicPingServerGen = require('./basicpingserver');
+const multiIni = require('multi-ini');
+const dispatchGen = require('./dispatch');
+const async = require('async');
 
 //START OF moduleFunction() ============================================================
 
 var moduleFunction = function() {
+
+	//VALIDATION ====================================
 
 	if (!process.env.srapiProjectPath) {
 		var message = "there must be an environment variable: srapiProjectPath";
@@ -30,67 +32,85 @@ var moduleFunction = function() {
 		return (message);
 	}
 
-	let webReport = [];
+	//LOCAL VARIABLES ====================================
 
-	let reportStatus = (err, result) => {
-		webReport.push({
-			err: err,
-			result: result
-		});
-	}
+	let webReport = [];
+	let workerList = {};
 
 	//LOCAL FUNCTIONS ====================================
-
-	let filterWebReport = (query) => {
-		let outArray = [];
-
-		for (var i = 0, len = webReport.length; i < len; i++) {
-			var element = webReport[i];
-			if (JSON.stringify(element).match(query.filter)) {
-				outArray.push(element);
-			}
-		}
-		return outArray;
-
-	}
 
 	//METHODS AND PROPERTIES ====================================
 
 	//INITIALIZATION ====================================
 
 	let config;
-	let basicPingServer;
 
 	const startSystem = () => {
 		config = multiIni.read(configPath);
-		config.user=process.env.USER;
+		config.user = process.env.USER;
 
-		basicPingServer = new basicPingServerGen({
+		workerList.dispatch = new dispatchGen({
 			config: config
-		});
-		qtools.message("BasicPingServer system start");
+		});;
 	};
 
 	const cleanup = () => {
-		basicPingServer = null;
-		webReport = [{
-			err: '',
-			result: `flushed at ${Date.now()}`
-		}];
-	}
+		let nameString = '';
+		for (var i in workerList) {
+			workerList[i] = null;
+			nameString = `${i}, `;
+		}
+		qtools.message(`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`);
 
-	const restart = () => {
-		basicPingServer.shutdown('restart', () => {
-			qtools.message("RESTART");
-			cleanup();
-			startSystem();
-		});
-
+		workerList={};
 	}
 
 	//START SYSTEM =======================================================
 	startSystem();
 
+
+	//for each thing that needs shutting down
+	// 	workerList.dispatch = new dispatchGen({
+	// 		config: config
+	// 	});
+	// 	workerList.push(workerList.dispatch);
+
+	//SET UP SIGNAL LISTENERS =======================================================
+
+	const buildShutdownList = (message) => {
+		const shutdownList = [];
+		for (var i in workerList) {
+			var worker = workerList[i];
+			shutdownList.push(
+				(done) => {
+					worker.shutdown(message, done)
+				}
+			);
+		}
+		return shutdownList;
+	};
+
+	//this is presently not attached to anything
+	const restart = () => {
+		async.parallel(buildShutdownList('restart'), () => {
+			cleanup();
+			startSystem();
+		});
+	}
+
+	process.on('SIGINT', () => {
+		async.parallel(buildShutdownList('SIGINT'), () => {
+			cleanup();
+			qtools.die('SIGINT');
+		});
+	});
+
+	process.on('SIGTERM', () => {
+		async.parallel(buildShutdownList('SIGTERM'), () => {
+			cleanup();
+			qtools.die('SIGTERM');
+		});
+	});
 	return this;
 };
 
