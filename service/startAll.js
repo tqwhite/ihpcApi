@@ -3,8 +3,10 @@
 const qtoolsGen = require('qtools');
 const qtools = new qtoolsGen(module);
 const multiIni = require('multi-ini');
-const dispatchGen = require('./dispatch');
 const async = require('async');
+
+const dispatchGen = require('./dispatch');
+const webInit = require('./web-init');
 
 //START OF moduleFunction() ============================================================
 
@@ -49,25 +51,32 @@ var moduleFunction = function() {
 		config = multiIni.read(configPath);
 		config.user = process.env.USER;
 
-		workerList.dispatch = new dispatchGen({
+		workerList.webInit = new webInit({
 			config: config
-		});;
+		});
+
+		workerList.dispatch = new dispatchGen({
+			config: config,
+			router: workerList.webInit.router
+		});
+
+		workerList.webInit.startServer();
+
 	};
 
 	const cleanup = () => {
 		let nameString = '';
 		for (var i in workerList) {
 			workerList[i] = null;
-			nameString = `${i}, `;
+			nameString += `${i}, `;
 		}
 		qtools.message(`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`);
 
-		workerList={};
+		workerList = {};
 	}
 
 	//START SYSTEM =======================================================
 	startSystem();
-
 
 	//for each thing that needs shutting down
 	// 	workerList.dispatch = new dispatchGen({
@@ -82,9 +91,11 @@ var moduleFunction = function() {
 		for (var i in workerList) {
 			var worker = workerList[i];
 			shutdownList.push(
-				(done) => {
-					worker.shutdown(message, done)
-				}
+				((i) => {
+					return (done) => {
+						workerList[i].shutdown(message, done)
+					}
+				})(i)
 			);
 		}
 		return shutdownList;
@@ -99,6 +110,15 @@ var moduleFunction = function() {
 	}
 
 	process.on('SIGINT', () => {
+
+		if (this.interruptInProcess) {
+			process.nextTick(() => {
+				this.interruptInProcess = false;
+			});
+			return;
+		}
+		this.interruptInProcess = true;
+
 		async.parallel(buildShutdownList('SIGINT'), () => {
 			cleanup();
 			qtools.die('SIGINT');
@@ -106,6 +126,13 @@ var moduleFunction = function() {
 	});
 
 	process.on('SIGTERM', () => {
+
+		if (this.interruptInProcess) {
+			process.nextTick(() => {
+				this.interruptInProcess = false;
+			});
+			return;
+		}
 		async.parallel(buildShutdownList('SIGTERM'), () => {
 			cleanup();
 			qtools.die('SIGTERM');

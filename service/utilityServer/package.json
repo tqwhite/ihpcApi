@@ -1,8 +1,8 @@
 {
-  "name": "basicpingserver",
+  "name": "utilityServer",
   "version": "1.0.0",
-  "description": "receives any sort of http request and responds pleasantly",
-  "main": "basicpingserver.js",
+  "description": "ping and other non-threatening web responses",
+  "main": "utilityServer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

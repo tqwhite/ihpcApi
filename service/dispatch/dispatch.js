@@ -2,9 +2,10 @@
 'use strict';
 const qtoolsGen = require('qtools');
 const qtools = new qtoolsGen(module);
-const	multiIni = require('multi-ini');
+const multiIni = require('multi-ini');
+const async = require('async');
 
-const basicPingServerGen = require('../basicpingserver');
+const utilityServerGen = require('../utilityServer');
 
 //START OF moduleFunction() ============================================================
 
@@ -17,17 +18,22 @@ var moduleFunction = function(args) {
 			{
 				name: 'config',
 				optional: false
+			},
+			{
+				name: 'router',
+				optional: false
 			}
 		]
 	});
-	let webReport = [];
 
+	let webReport = [];
 	let reportStatus = (err, result) => {
 		webReport.push({
 			err: err,
 			result: result
 		});
 	}
+	let workerList = {};
 
 	//LOCAL FUNCTIONS ====================================
 
@@ -44,45 +50,53 @@ var moduleFunction = function(args) {
 
 	}
 
+	const startSystem = () => {
+		workerList.utilityServer = new utilityServerGen({
+			config: this.config,
+			router: this.router
+		});
+	};
+
+	const buildShutdownList = (message) => {
+		const shutdownList = [];
+		for (var i in workerList) {
+			var worker = workerList[i];
+			shutdownList.push(
+				((i) => {
+					return (done) => {
+						workerList[i].shutdown(message, done)
+					}
+				})(i)
+			);
+		}
+		return shutdownList;
+	};
+
+	const cleanup = () => {
+		let nameString = '';
+		for (var i in workerList) {
+			workerList[i] = null;
+			nameString += `${i}, `;
+		}
+		qtools.message(`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`);
+		workerList = {};
+	}
+
 	//METHODS AND PROPERTIES ====================================
 
-
 	this.shutdown = (message, callback) => {
-		callback('', message);
+		async.parallel(buildShutdownList(message), () => {
+			cleanup();
+			callback('', message);
+		});
 	}
 
 	//INITIALIZATION ====================================
 
-	let basicPingServer;
-
-	const startSystem = () => {
-
-		basicPingServer = new basicPingServerGen({
-			config: this.config
-		});
-		qtools.message("BasicPingServer system start");
-	};
-
-	const cleanup = () => {
-		basicPingServer = null;
-		webReport = [{
-			err: '',
-			result: `flushed at ${Date.now()}`
-		}];
-	}
-
-	const restart = () => {
-		basicPingServer.shutdown('restart', () => {
-			qtools.message("RESTART");
-			cleanup();
-			startSystem();
-		});
-
-	}
+	let utilityServer;
 
 	//START SYSTEM =======================================================
 	startSystem();
-
 	return this;
 };
 
