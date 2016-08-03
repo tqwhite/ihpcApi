@@ -71,13 +71,16 @@ var moduleFunction = function(args) {
 		req.headers=headers;
 		next();
 	});
+	app.use((req, res, next) => {
+console.log(req.path);
+		next();
+	});
 
-	var router = express.Router();
-	app.use('/', router);
+
 
 	//INITIALIZATION ====================================
 
-	this.router=router;
+	this.router=app;
 
 
 	return this;

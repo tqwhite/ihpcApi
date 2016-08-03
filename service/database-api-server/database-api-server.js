@@ -1,12 +1,12 @@
-#!/usr/local/bin/node
 'use strict';
 const qtoolsGen = require('qtools');
 const qtools = new qtoolsGen(module);
-const multiIni = require('multi-ini');
 const async = require('async');
 
-const utilityServerGen = require('../utilityServer');
-const databaseApiServerGen= require('../database-api-server');
+const mongoose = require('mongoose');
+
+const usersGen = require('users');
+const sessionsGen = require('sessions');
 
 //START OF moduleFunction() ============================================================
 
@@ -28,19 +28,26 @@ var moduleFunction = function(args) {
 	});
 
 	//LOCAL VARIABLES ====================================
-	
+
+	let db = mongoose.connect(this.config.database.connectionString).connection;
+
 	let workerList = {};
 
 	//LOCAL FUNCTIONS ====================================
 
 	const startSystem = () => {
-		workerList.utilityServer = new utilityServerGen({
+		const argsPackage = {
 			config: this.config,
-			router: this.router
-		});
-		workerList.databaseApiServer = new databaseApiServerGen({
+			router: this.router,
+			mongoose: mongoose
+		}
+
+		const usersModel=new usersGen(argsPackage);
+		workerList.users = usersModel;
+		workerList.sessions = new sessionsGen({
 			config: this.config,
-			router: this.router
+			router: this.router,
+			usersModel: usersModel
 		});
 	};
 
@@ -59,31 +66,38 @@ var moduleFunction = function(args) {
 		return shutdownList;
 	};
 
-	const cleanup = () => {
+	const cleanup = (callback) => {
 		let nameString = '';
 		for (var i in workerList) {
 			workerList[i] = null;
 			nameString += `${i}, `;
 		}
-		qtools.message(`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`);
 		workerList = {};
+		db.close((err) => {
+			nameString += `mongoConnection, `;
+			qtools.message(`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`);
+			callback(err);
+		});
 	}
 
 	//METHODS AND PROPERTIES ====================================
 
 	this.shutdown = (message, callback) => {
 		async.parallel(buildShutdownList(message), () => {
-			cleanup();
-			callback('', message);
+			cleanup((err) => {
+				callback(err, message)
+			});
+
 		});
 	}
 
 	//INITIALIZATION ====================================
 
-	let utilityServer;
+	db.on('error', console.error.bind(console, `connection error: ${this.config.database.connectionString}`));
+	db.once('open', startSystem);
 
 	//START SYSTEM =======================================================
-	startSystem();
+
 	return this;
 };
 
