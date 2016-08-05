@@ -27,6 +27,10 @@ var moduleFunction = function(args) {
 			{
 				name:'router',
 				optional:false
+			},
+			{
+				name:'permissionMaster', //I don't know if this will be needed but, it's standard equipment so I am passing it through
+				optional:false
 			}
 		]
 	});

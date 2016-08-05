@@ -57,7 +57,8 @@ var moduleFunction = function() {
 
 		workerList.dispatch = new dispatchGen({
 			config: config,
-			router: workerList.webInit.router
+			router: workerList.webInit.router,
+			permissionMaster: workerList.webInit.permissionMaster
 		});
 
 		workerList.webInit.startServer();

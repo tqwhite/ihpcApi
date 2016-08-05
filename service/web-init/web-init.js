@@ -7,6 +7,8 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 
+const permissionMasterGen=require('permission-master');
+
 
 //START OF moduleFunction() ============================================================
 
@@ -23,7 +25,8 @@ var moduleFunction = function(args) {
 		]
 	});
 
-
+	this.permissionMaster=new permissionMasterGen(args);
+	
 	//LOCAL FUNCTIONS ====================================
 
 
@@ -39,9 +42,21 @@ var moduleFunction = function(args) {
 	
 	this.startServer=()=>{
 
-		app.listen(this.config.system.port);
+		app.use(function(err, req, res, next) {
+		  console.error(err.stack);
+		  res.status((typeof(+err.code)=='number')?err.code:500).send(err.message?err.message:'unexpected error');
+		});
+		
+		const server=app.listen(this.config.system.port);
 
-		qtools.message('Magic happens on port ' + this.config.system.port);
+
+		server.on('listening', function() {
+			var address = server.address();
+			var url = 'http://' + (address.address === '::' ?
+				'localhost' : address.address) + ':' + address.port;
+
+			qtools.message(`done-serve starting on ${url} \nat ${new Date().toLocaleDateString('en-US', { hour: '2-digit',minute: '2-digit',second: '2-digit' })} `);
+		});
 	
 	}
 
@@ -60,6 +75,7 @@ var moduleFunction = function(args) {
 		//	console.log("transaction# " + this.transactionCount + " =======================\n");
 		next();
 	});
+	
 	app.use((req, res, next) => {
 		const headers = {};
 		for (var i in req.headers) {
@@ -75,8 +91,31 @@ var moduleFunction = function(args) {
 console.log(req.path);
 		next();
 	});
+	
+	const unpackRequest=(req, res, next)=>{
+		/*to accomodate the token, the transfer format is:
+			{
+				data://whatever the data source wants,
+				token://whatever the security system wants
+			}
+		*/
+		if (req.query && req.query.token){
+			req.token=req.query.token;
+			delete req.query.token;
+			req.query=req.query.data;
+		}
+		if (req.body && req.body.token){
+			req.token=req.body.token;
+			delete req.body.token;
+			req.body=req.body.data;
+		}
+		
+		next();	
+	};
+	
+	app.use(unpackRequest, this.permissionMaster.checkPath);
 
-
+	
 
 	//INITIALIZATION ====================================
 

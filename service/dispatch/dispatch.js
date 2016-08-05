@@ -23,6 +23,10 @@ var moduleFunction = function(args) {
 			{
 				name: 'router',
 				optional: false
+			},
+			{
+				name:'permissionMaster',
+				optional:false
 			}
 		]
 	});
@@ -36,11 +40,13 @@ var moduleFunction = function(args) {
 	const startSystem = () => {
 		workerList.utilityServer = new utilityServerGen({
 			config: this.config,
-			router: this.router
+			router: this.router,
+			permissionMaster:this.permissionMaster
 		});
 		workerList.databaseApiServer = new databaseApiServerGen({
 			config: this.config,
-			router: this.router
+			router: this.router,
+			permissionMaster:this.permissionMaster
 		});
 	};
 

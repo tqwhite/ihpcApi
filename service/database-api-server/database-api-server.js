@@ -23,6 +23,10 @@ var moduleFunction = function(args) {
 			{
 				name: 'router',
 				optional: false
+			},
+			{
+				name:'permissionMaster',
+				optional:false
 			}
 		]
 	});
@@ -39,14 +43,17 @@ var moduleFunction = function(args) {
 		const argsPackage = {
 			config: this.config,
 			router: this.router,
+			permissionMaster:this.permissionMaster,
 			mongoose: mongoose
 		}
 
 		const usersModel=new usersGen(argsPackage);
 		workerList.users = usersModel;
+		
 		workerList.sessions = new sessionsGen({
 			config: this.config,
 			router: this.router,
+			permissionMaster:this.permissionMaster,
 			usersModel: usersModel
 		});
 	};
