@@ -51,17 +51,33 @@ var moduleFunction = function() {
 		config = multiIni.read(configPath);
 		config.user = process.env.USER;
 
-		workerList.webInit = new webInit({
-			config: config
+		const startList = [];
+
+		startList.push((done) => {
+			const workerName = 'webInit'
+			new webInit({
+				config: config,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
 		});
 
-		workerList.dispatch = new dispatchGen({
-			config: config,
-			router: workerList.webInit.router,
-			permissionMaster: workerList.webInit.permissionMaster
+		startList.push((done) => {
+			const workerName = 'dispatch'
+			new dispatchGen({
+				config: config,
+				router: workerList.webInit.router,
+				permissionMaster: workerList.webInit.permissionMaster,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
 		});
 
-		workerList.webInit.startServer();
+		async.series(startList, () => {
+			workerList.webInit.startServer();
+		});
 
 	};
 

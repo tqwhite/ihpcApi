@@ -2,13 +2,11 @@
 const qtoolsGen = require('qtools');
 const qtools = new qtoolsGen(module);
 
-
 var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 
-const permissionMasterGen=require('permission-master');
-
+const permissionMasterGen = require('permission-master');
 
 //START OF moduleFunction() ============================================================
 
@@ -21,43 +19,47 @@ var moduleFunction = function(args) {
 			{
 				name: 'config',
 				optional: false
+			},
+			{
+				name: 'initCallback',
+				optional: false
 			}
 		]
 	});
 
-	this.permissionMaster=new permissionMasterGen(args);
-	
+	this.permissionMaster = new permissionMasterGen(args);
+
 	//LOCAL FUNCTIONS ====================================
 
-
-
 	//METHODS AND PROPERTIES ====================================
-
 
 	this.shutdown = (message, callback) => {
 		callback('', message);
 	}
 
 	//START SERVER =======================================================
-	
-	this.startServer=()=>{
+
+	this.startServer = () => {
 
 		app.use(function(err, req, res, next) {
-		  console.error(err.stack);
-		  res.status((typeof(+err.code)=='number')?err.code:500).send(err.message?err.message:'unexpected error');
+			res.status((typeof (+err.code) == 'number') ? err.code : 500).send(err.message ? err.message : 'unexpected error');
 		});
-		
-		const server=app.listen(this.config.system.port);
 
+		const server = app.listen(this.config.system.port);
 
 		server.on('listening', function() {
 			var address = server.address();
 			var url = 'http://' + (address.address === '::' ?
 				'localhost' : address.address) + ':' + address.port;
 
-			qtools.message(`done-serve starting on ${url} \nat ${new Date().toLocaleDateString('en-US', { hour: '2-digit',minute: '2-digit',second: '2-digit' })} `);
+			qtools.message(`done-serve starting on ${url} 
+at ${new Date().toLocaleDateString('en-US', {
+				hour: '2-digit',
+				minute: '2-digit',
+				second: '2-digit'
+			})} `);
 		});
-	
+
 	}
 
 	//SET UP SERVER =======================================================
@@ -75,7 +77,7 @@ var moduleFunction = function(args) {
 		//	console.log("transaction# " + this.transactionCount + " =======================\n");
 		next();
 	});
-	
+
 	app.use((req, res, next) => {
 		const headers = {};
 		for (var i in req.headers) {
@@ -84,43 +86,41 @@ var moduleFunction = function(args) {
 				headers[i] = element;
 			}
 		}
-		req.headers=headers;
+		req.headers = headers;
 		next();
 	});
 	app.use((req, res, next) => {
-console.log(req.path);
+		console.log(`req.path= ${req.path}`);
 		next();
 	});
-	
-	const unpackRequest=(req, res, next)=>{
+
+	const unpackRequest = (req, res, next) => {
 		/*to accomodate the token, the transfer format is:
 			{
 				data://whatever the data source wants,
 				token://whatever the security system wants
 			}
 		*/
-		if (req.query && req.query.token){
-			req.token=req.query.token;
+		if (req.query && req.query.token) {
+			req.token = req.query.token;
 			delete req.query.token;
-			req.query=req.query.data;
+			req.query = req.query.data;
 		}
-		if (req.body && req.body.token){
-			req.token=req.body.token;
+		if (req.body && req.body.token) {
+			req.token = req.body.token;
 			delete req.body.token;
-			req.body=req.body.data;
+			req.body = req.body.data;
 		}
-		
-		next();	
-	};
-	
-	app.use(unpackRequest, this.permissionMaster.checkPath);
 
-	
+		next();
+	};
+
+	app.use(unpackRequest, this.permissionMaster.checkPath);
 
 	//INITIALIZATION ====================================
 
-	this.router=app;
-
+	this.router = app;
+	this.initCallback();
 
 	return this;
 };
@@ -129,9 +129,4 @@ console.log(req.path);
 
 module.exports = moduleFunction;
 //module.exports = new moduleFunction();
-
-
-
-
-
 

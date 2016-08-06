@@ -6,7 +6,7 @@ const multiIni = require('multi-ini');
 const async = require('async');
 
 const utilityServerGen = require('../utilityServer');
-const databaseApiServerGen= require('../database-api-server');
+const databaseApiServerGen = require('../database-api-server');
 
 //START OF moduleFunction() ============================================================
 
@@ -25,28 +25,52 @@ var moduleFunction = function(args) {
 				optional: false
 			},
 			{
-				name:'permissionMaster',
-				optional:false
+				name: 'permissionMaster',
+				optional: false
+			},
+			{
+				name: 'initCallback',
+				optional: false
 			}
 		]
 	});
 
 	//LOCAL VARIABLES ====================================
-	
+
 	let workerList = {};
 
 	//LOCAL FUNCTIONS ====================================
 
 	const startSystem = () => {
-		workerList.utilityServer = new utilityServerGen({
-			config: this.config,
-			router: this.router,
-			permissionMaster:this.permissionMaster
+
+		const startList = [];
+
+		startList.push((done) => {
+			const workerName = 'utilityServer'
+			new utilityServerGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
 		});
-		workerList.databaseApiServer = new databaseApiServerGen({
-			config: this.config,
-			router: this.router,
-			permissionMaster:this.permissionMaster
+
+		startList.push((done) => {
+			const workerName = 'databaseApiServer'
+			new databaseApiServerGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		async.series(startList, () => {
+			this.initCallback()
 		});
 	};
 

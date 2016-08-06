@@ -25,8 +25,12 @@ var moduleFunction = function(args) {
 				optional: false
 			},
 			{
-				name:'permissionMaster',
-				optional:false
+				name: 'permissionMaster',
+				optional: false
+			},
+			{
+				name: 'initCallback',
+				optional: false
 			}
 		]
 	});
@@ -40,21 +44,37 @@ var moduleFunction = function(args) {
 	//LOCAL FUNCTIONS ====================================
 
 	const startSystem = () => {
-		const argsPackage = {
-			config: this.config,
-			router: this.router,
-			permissionMaster:this.permissionMaster,
-			mongoose: mongoose
-		}
 
-		const usersModel=new usersGen(argsPackage);
-		workerList.users = usersModel;
-		
-		workerList.sessions = new sessionsGen({
-			config: this.config,
-			router: this.router,
-			permissionMaster:this.permissionMaster,
-			usersModel: usersModel
+		const startList = [];
+
+		startList.push((done) => {
+			const workerName = 'users'
+			new usersGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		startList.push((done) => {
+			const workerName = 'session'
+			new sessionsGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				usersModel: workerList.users,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		async.series(startList, () => {
+			this.initCallback()
 		});
 	};
 

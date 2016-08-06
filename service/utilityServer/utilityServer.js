@@ -25,16 +25,19 @@ var moduleFunction = function(args) {
 				optional: true
 			},
 			{
-				name:'router',
-				optional:false
+				name: 'router',
+				optional: false
 			},
 			{
-				name:'permissionMaster', //I don't know if this will be needed but, it's standard equipment so I am passing it through
-				optional:false
+				name: 'permissionMaster', //I don't know if this will be needed but, it's standard equipment so I am passing it through
+				optional: false
+			},
+			{
+				name: 'initCallback',
+				optional: false
 			}
 		]
 	});
-
 
 	var self = this;
 	var forceEvent = function(eventName, outData) {
@@ -60,7 +63,6 @@ var moduleFunction = function(args) {
 
 	//START SERVER ROUTING FUNCTION =======================================================
 
-
 	this.router.get(/ping/, function(req, res, next) {
 
 		res.set({
@@ -70,7 +72,7 @@ var moduleFunction = function(args) {
 			responsesource: 'utilityServer',
 			connection: 'Close'
 		});
-		
+
 		res.json({
 			status: `hello from ${self.config.system.name}//${self.config.user}${req.path} GET`,
 			headers: req.headers,
@@ -96,6 +98,7 @@ var moduleFunction = function(args) {
 		});
 	});
 
+	this.initCallback();
 	return this;
 };
 
@@ -108,5 +111,4 @@ module.exports = moduleFunction;
 //curl 'http://localhost:9000/ping' --data 'x=y'
 //curl 'http://localhost:9000/ping'
 //curl 'http://localhost:9000/'
-
 
