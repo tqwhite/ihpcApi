@@ -63,7 +63,10 @@ var moduleFunction = function(args) {
 
 	//START SERVER ROUTING FUNCTION =======================================================
 
-	this.router.get(/ping/, function(req, res, next) {
+
+	let route = new RegExp('ping$');
+	this.permissionMaster.addRoute(route, 'all');
+	this.router.get(route, function(req, res, next) {
 
 		res.set({
 			'content-type': 'application/json;charset=ISO-8859-1',
@@ -74,14 +77,16 @@ var moduleFunction = function(args) {
 		});
 
 		res.json({
-			status: `hello from ${self.config.system.name}//${self.config.user}${req.path} GET`,
+			status: `hello from ${self.config.system.name} ${self.config.user}${req.path} GET`,
 			headers: req.headers,
 			body: req.body,
 			query: req.query
 		});
 	});
 
-	this.router.post(/ping/, function(req, res, next) {
+	route = new RegExp('ping$');
+	this.permissionMaster.addRoute(route, 'all');
+	this.router.post(route, function(req, res, next) {
 
 		res.set({
 			'content-type': 'application/json;charset=ISO-8859-1',
