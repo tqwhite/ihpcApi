@@ -101,13 +101,18 @@ at ${new Date().toLocaleDateString('en-US', {
 				token://whatever the security system wants
 			}
 		*/
-		if (req.query && req.query.token) {
-			req.token = req.query.token;
+
+		if (req.query) {
+			if (req.query.token) {
+				req.token = req.query.token;
+			}
 			delete req.query.token;
 			req.query = req.query.data;
 		}
-		if (req.body && req.body.token) {
-			req.token = req.body.token;
+		if (req.body) {
+			if (req.body.token) {
+				req.token = req.body.token;
+			}
 			delete req.body.token;
 			req.body = req.body.data;
 		}
