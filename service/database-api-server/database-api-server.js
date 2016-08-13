@@ -5,8 +5,6 @@ const async = require('async');
 
 const mongoose = require('mongoose');
 
-const usersGen = require('users');
-const sessionsGen = require('sessions');
 
 //START OF moduleFunction() ============================================================
 
@@ -47,6 +45,7 @@ var moduleFunction = function(args) {
 
 		const startList = [];
 
+		const sessionsGen = require('sessions');
 		startList.push((done) => {
 			const workerName = 'users'
 			new usersGen({
@@ -60,6 +59,7 @@ var moduleFunction = function(args) {
 			});
 		});
 
+		const usersGen = require('users');
 		startList.push((done) => {
 			const workerName = 'session'
 			new sessionsGen({
@@ -67,6 +67,22 @@ var moduleFunction = function(args) {
 				router: this.router,
 				permissionMaster: this.permissionMaster,
 				usersModel: workerList.users,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+		
+		
+
+		const boilerplateGen = require('boilerplate');
+		startList.push((done) => {
+			const workerName = 'boilerplate'
+			new boilerplateGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
 				initCallback: function() {
 					workerList[workerName] = this; done();
 				}
