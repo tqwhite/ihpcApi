@@ -42,7 +42,11 @@ var moduleFunction = function(args) {
 	this.startServer = () => {
 
 		app.use(function(err, req, res, next) {
-			res.status((typeof (+err.code) == 'number') ? err.code : 500).send(err.message ? err.message : 'unexpected error');
+			err=err?err:{};
+			if (!err.code || typeof (+err.code) != 'number'){
+				err.code=500;
+			}
+			res.status(err.code).send(err.message ? err.message : 'unexpected error');
 		});
 
 		const server = app.listen(this.config.system.port);
@@ -101,7 +105,6 @@ at ${new Date().toLocaleDateString('en-US', {
 				token://whatever the security system wants
 			}
 		*/
-
 		if (req.query) {
 			if (req.query.token) {
 				req.token = req.query.token;
@@ -116,6 +119,11 @@ at ${new Date().toLocaleDateString('en-US', {
 			delete req.body.token;
 			req.body = req.body.data;
 		}
+
+			if (req.body && req.body.token){
+			delete req.body.token;
+			}
+
 
 		next();
 	};
