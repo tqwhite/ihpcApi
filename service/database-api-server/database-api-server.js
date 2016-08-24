@@ -88,6 +88,22 @@ var moduleFunction = function(args) {
 				}
 			});
 		});
+		
+		
+
+		const studentsGen = require('students');
+		startList.push((done) => {
+			const workerName = 'students'
+			new studentsGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
 
 		async.series(startList, () => {
 			this.initCallback()
