@@ -105,6 +105,20 @@ var moduleFunction = function(args) {
 			});
 		});
 
+		const plansGen = require('plans');
+		startList.push((done) => {
+			const workerName = 'plans'
+			new plansGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
 		async.series(startList, () => {
 			this.initCallback()
 		});
