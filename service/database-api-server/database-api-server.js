@@ -119,6 +119,20 @@ var moduleFunction = function(args) {
 			});
 		});
 
+		const backupGen = require('backup-database');
+		startList.push((done) => {
+			const workerName = 'backup-database'
+			new backupGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
 		async.series(startList, () => {
 			this.initCallback()
 		});
