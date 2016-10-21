@@ -46,6 +46,9 @@ var moduleFunction = function(args) {
 			if (!err.code || typeof (+err.code) != 'number'){
 				err.code=500;
 			}
+			if (err.errorObject){
+				err.message=err.errorObject;
+			}
 			res.status(err.code).send(err.message ? err.message : 'unexpected error');
 		});
 
