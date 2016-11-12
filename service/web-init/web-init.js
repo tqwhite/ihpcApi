@@ -47,9 +47,9 @@ var moduleFunction = function(args) {
 				err.code=500;
 			}
 			if (err.errorObject){
-				err.message=err.errorObject;
+				err.errorText=err.errorObject;
 			}
-			res.status(err.code).send(err.message ? err.message : 'unexpected error');
+			res.status(err.code).send(err.errorText ? err.errorText : 'unexpected error');
 		});
 
 		const server = app.listen(this.config.system.port);
