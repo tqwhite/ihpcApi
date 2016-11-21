@@ -49,7 +49,7 @@ var moduleFunction = function(args) {
 			if (err.errorObject){
 				err.errorText=err.errorObject;
 			}
-			res.status(err.code).send(err.errorText ? err.errorText : 'unexpected error');
+			res.status(err.code).send({errorSource:'web-init', errorText:(err.errorText || err.message || 'unexpected error')});
 		});
 
 		const server = app.listen(this.config.system.port);
