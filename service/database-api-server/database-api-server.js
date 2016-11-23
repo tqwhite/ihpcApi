@@ -44,11 +44,13 @@ var moduleFunction = function(args) {
 	const startSystem = () => {
 
 		const startList = [];
+		
+		//note, this is a series worklist. Order matters.
 
-		const sessionsGen = require('sessions');
+		const bookNumbersGen = require('book-numbers');
 		startList.push((done) => {
-			const workerName = 'users'
-			new usersGen({
+			const workerName = 'bookNumbers'
+			new bookNumbersGen({
 				config: this.config,
 				router: this.router,
 				permissionMaster: this.permissionMaster,
@@ -60,6 +62,21 @@ var moduleFunction = function(args) {
 		});
 
 		const usersGen = require('users');
+		startList.push((done) => {
+			const workerName = 'users'
+			new usersGen({
+				config: this.config,
+				router: this.router,
+				permissionMaster: this.permissionMaster,
+				bookNumbersModel: workerList.bookNumbers,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		const sessionsGen = require('sessions');
 		startList.push((done) => {
 			const workerName = 'session'
 			new sessionsGen({

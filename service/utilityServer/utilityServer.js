@@ -65,7 +65,7 @@ var moduleFunction = function(args) {
 
 
 	let route = new RegExp('ping$');
-	this.permissionMaster.addRoute(route, 'all');
+	this.permissionMaster.addRoute('get', route, 'all');
 	this.router.get(route, function(req, res, next) {
 
 		res.set({
@@ -85,7 +85,7 @@ var moduleFunction = function(args) {
 	});
 
 	route = new RegExp('ping$');
-	this.permissionMaster.addRoute(route, 'all');
+	this.permissionMaster.addRoute('post', route, 'all');
 	this.router.post(route, function(req, res, next) {
 
 		res.set({
