@@ -34,7 +34,10 @@ var moduleFunction = function(args) {
 	});
 
 	//LOCAL VARIABLES ====================================
-
+	
+	//mongoose is a GLOBAL (yuck). It is also used by 
+	// service/message-tool/message-tools.js 
+	
 	let db = mongoose.connect(this.config.database.connectionString).connection;
 
 	let workerList = {};
