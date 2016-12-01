@@ -1,0 +1,11 @@
+{
+  "name": "api-manager",
+  "version": "1.0.0",
+  "description": "provide express-like registration of internal API functions",
+  "main": "api-manager.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "TQ White II",
+  "license": "ISC"
+}
