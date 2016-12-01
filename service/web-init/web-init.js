@@ -59,8 +59,7 @@ var moduleFunction = function(args) {
 			var url = 'http://' + (address.address === '::' ?
 				'localhost' : address.address) + ':' + address.port;
 
-			qtools.message(`done-serve starting on ${url} 
-at ${new Date().toLocaleDateString('en-US', {
+			qtools.message(`done-serve starting on ${url}\nat ${new Date().toLocaleDateString('en-US', {
 				hour: '2-digit',
 				minute: '2-digit',
 				second: '2-digit'

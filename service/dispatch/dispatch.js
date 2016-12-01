@@ -7,6 +7,7 @@ const async = require('async');
 
 const utilityServerGen = require('../utilityServer');
 const databaseApiServerGen = require('../database-api-server');
+const mailToolServerGen = require('../mail-tool');
 
 //START OF moduleFunction() ============================================================
 
@@ -18,6 +19,10 @@ var moduleFunction = function(args) {
 		propList: [
 			{
 				name: 'config',
+				optional: false
+			},
+			{
+				name: 'apiManager',
 				optional: false
 			},
 			{
@@ -69,10 +74,33 @@ var moduleFunction = function(args) {
 			});
 		});
 
+		startList.push((done) => {
+			const workerName = 'mailTool'
+			new mailToolServerGen({
+				config: this.config,
+				router: this.router,
+				apiManager:this.apiManager.init(workerName),
+				permissionMaster: this.permissionMaster,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
 		async.series(startList, () => {
 			this.initCallback()
 		});
 	};
+
+	//METHODS AND PROPERTIES ====================================
+
+	//INITIALIZATION ====================================
+
+	//START SYSTEM =======================================================
+	
+	startSystem();
+
+	//SHUTDOWN FUNCTIONS ====================================	
 
 	const buildShutdownList = (message) => {
 		const shutdownList = [];
@@ -99,21 +127,14 @@ var moduleFunction = function(args) {
 		workerList = {};
 	}
 
-	//METHODS AND PROPERTIES ====================================
-
 	this.shutdown = (message, callback) => {
 		async.parallel(buildShutdownList(message), () => {
 			cleanup();
 			callback('', message);
 		});
 	}
-
-	//INITIALIZATION ====================================
-
-	let utilityServer;
-
-	//START SYSTEM =======================================================
-	startSystem();
+	
+	
 	return this;
 };
 

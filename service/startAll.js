@@ -7,6 +7,7 @@ const async = require('async');
 
 const dispatchGen = require('./dispatch');
 const webInit = require('./web-init');
+const apiManager = require('./api-manager');
 
 //START OF moduleFunction() ============================================================
 
@@ -54,6 +55,16 @@ var moduleFunction = function() {
 		const startList = [];
 
 		startList.push((done) => {
+			const workerName = 'apiManager'
+			new apiManager({
+				config: config,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		startList.push((done) => {
 			const workerName = 'webInit'
 			new webInit({
 				config: config,
@@ -67,6 +78,7 @@ var moduleFunction = function() {
 			const workerName = 'dispatch'
 			new dispatchGen({
 				config: config,
+				apiManager: workerList.apiManager.init(workerName),
 				router: workerList.webInit.router,
 				permissionMaster: workerList.webInit.permissionMaster,
 				initCallback: function() {
@@ -77,6 +89,7 @@ var moduleFunction = function() {
 
 		async.series(startList, () => {
 			workerList.webInit.startServer();
+			workerList.apiManager.list('dispatch');
 		});
 
 	};
@@ -100,6 +113,7 @@ var moduleFunction = function() {
 	// 		config: config
 	// 	});
 	// 	workerList.push(workerList.dispatch);
+	
 
 	//SET UP SIGNAL LISTENERS =======================================================
 
