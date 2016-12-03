@@ -19,6 +19,10 @@ var moduleFunction = function(args) {
 				optional: false
 			},
 			{
+				name: 'apiManager',
+				optional: true
+			},
+			{
 				name: 'router',
 				optional: false
 			},
@@ -68,10 +72,11 @@ var moduleFunction = function(args) {
 		startList.push((done) => {
 			const workerName = 'users'
 			new usersGen({
+				bookNumbersModel: workerList.bookNumbers,
 				config: this.config,
 				router: this.router,
+				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
-				bookNumbersModel: workerList.bookNumbers,
 				mongoose: mongoose,
 				initCallback: function() {
 					workerList[workerName] = this; done();

@@ -67,6 +67,7 @@ var moduleFunction = function(args) {
 			new databaseApiServerGen({
 				config: this.config,
 				router: this.router,
+				apiManager:this.apiManager.init(workerName, 'newRoot'),
 				permissionMaster: this.permissionMaster,
 				initCallback: function() {
 					workerList[workerName] = this; done();
@@ -79,7 +80,7 @@ var moduleFunction = function(args) {
 			new mailToolServerGen({
 				config: this.config,
 				router: this.router,
-				apiManager:this.apiManager.init(workerName),
+				apiManager:this.apiManager.init(workerName, 'newRoot'),
 				permissionMaster: this.permissionMaster,
 				initCallback: function() {
 					workerList[workerName] = this; done();

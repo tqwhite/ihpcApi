@@ -74,11 +74,16 @@ var moduleFunction = function(args) {
 		}
 	}
 
-	this.init = (workerName) => {
+	this.init = (workerName, newRoot) => {
 		const parentPath = this.parentPath ? this.parentPath + '.' : '';
 		const descendent = Object.assign({}, this);
 		descendent.parentPath = parentPath + workerName;
+		if  (!newRoot){
 		this.parentPath = descendent.parentPath
+		}
+		else{
+		this.parentPath=workerName;
+		}
 		return descendent;
 	};
 
@@ -86,7 +91,7 @@ var moduleFunction = function(args) {
 		label=label?'(at '+label+') ':''
 		const dump = qtools.dumpFlat({
 			"this.apiStructure": this.apiStructure
-		}, true).replace(/this\./g, '');
+		}, true).replace(/this\.apiStructure\./g, '');
 		console.log(`\n\napiManager method list ${label}=========================\n\n${dump}\nEND apiManager, =========================\n\n`)
 	}
 
