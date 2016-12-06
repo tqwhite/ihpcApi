@@ -92,7 +92,6 @@ var moduleFunction = function(args) {
 				router: this.router,
 				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
-				usersModel: workerList.users,
 				initCallback: function() {
 					workerList[workerName] = this; done();
 				}
