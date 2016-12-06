@@ -90,6 +90,7 @@ var moduleFunction = function(args) {
 			new sessionsGen({
 				config: this.config,
 				router: this.router,
+				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
 				usersModel: workerList.users,
 				initCallback: function() {
