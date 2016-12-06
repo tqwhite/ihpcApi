@@ -60,6 +60,7 @@ var moduleFunction = function(args) {
 			new bookNumbersGen({
 				config: this.config,
 				router: this.router,
+				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
 				mongoose: mongoose,
 				initCallback: function() {
@@ -72,7 +73,6 @@ var moduleFunction = function(args) {
 		startList.push((done) => {
 			const workerName = 'users'
 			new usersGen({
-				bookNumbersModel: workerList.bookNumbers,
 				config: this.config,
 				router: this.router,
 				apiManager:this.apiManager.init(workerName),
