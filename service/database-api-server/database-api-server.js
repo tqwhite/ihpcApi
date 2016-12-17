@@ -106,6 +106,7 @@ var moduleFunction = function(args) {
 			new boilerplateGen({
 				config: this.config,
 				router: this.router,
+				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
 				mongoose: mongoose,
 				initCallback: function() {

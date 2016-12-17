@@ -21,6 +21,10 @@ var moduleFunction = function(args) {
 				optional: false
 			},
 			{
+				name: 'apiManager',
+				optional: false
+			},
+			{
 				name: 'initCallback',
 				optional: false
 			}
@@ -30,6 +34,16 @@ var moduleFunction = function(args) {
 	this.permissionMaster = new permissionMasterGen(args);
 
 	//LOCAL FUNCTIONS ====================================
+
+	
+	const listPaths=()=>{
+				console.log("\nexpress.route path list (at startAll) =========================\n");
+			this.router._router.stack.forEach((item) => {
+				console.log(item.regexp);
+			});
+			console.log("\nEND express.route =========================\n");
+
+};
 
 	//METHODS AND PROPERTIES ====================================
 
@@ -112,7 +126,7 @@ var moduleFunction = function(args) {
 				req.token = req.query.token;
 			}
 			delete req.query.token;
-			req.query = req.query.data;
+			req.query = Object.assign({}, req.query, req.query.data);
 		}
 		if (req.body) {
 			if (req.body.token) {
@@ -125,20 +139,19 @@ var moduleFunction = function(args) {
 			if (req.body && req.body.token){
 			delete req.body.token;
 			}
-
-
 		next();
 	};
 
 	app.use(unpackRequest, this.permissionMaster.checkPath);
 
 	//INITIALIZATION ====================================
+	this.apiManager.registerApi('listPaths', listPaths);
 
 	this.router = app;
 	this.initCallback();
 
 	return this;
-};
+};			
 
 //END OF moduleFunction() ============================================================
 

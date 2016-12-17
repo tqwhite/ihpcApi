@@ -8,6 +8,7 @@ const async = require('async');
 const dispatchGen = require('./dispatch');
 const webInit = require('./web-init');
 const apiManager = require('./api-manager');
+const staticPageDispatch = require('./staticPageDispatch');
 
 //START OF moduleFunction() ============================================================
 
@@ -45,6 +46,15 @@ var moduleFunction = function() {
 	//METHODS AND PROPERTIES ====================================
 
 	//INITIALIZATION ====================================
+	
+	/*
+		Be aware: This application is organized to allow access
+		based on a JSON Web Token. In addition to initializing expressjs
+		web-init initalizes the permissionMaster. Before an
+		expressjs route is acted upon, it has to be approved by
+		permissionMaster. 
+	
+	*/
 
 	let config;
 
@@ -68,6 +78,7 @@ var moduleFunction = function() {
 			const workerName = 'webInit'
 			new webInit({
 				config: config,
+				apiManager: workerList.apiManager.init(workerName),
 				initCallback: function() {
 					workerList[workerName] = this; done();
 				}
@@ -87,9 +98,25 @@ var moduleFunction = function() {
 			});
 		});
 
+		startList.push((done) => {
+			const workerName = 'staticPageDispatch/'
+			new staticPageDispatch({
+				filePathList:qtools.convertNumericObjectToArray(config.system.staticPageLibraryFilePathList),
+				router: workerList.webInit.router,
+				reportPath:(urlSegment)=>{
+					workerList.apiManager.getApi('databaseApiServer.bookNumbers.users.session.boilerplate.registerStaticPath')(urlSegment);
+					workerList.webInit.permissionMaster.getAccessControl({clientName:workerName, role:'all'})(urlSegment);
+					},
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
 		async.series(startList, () => {
 			workerList.webInit.startServer();
-			workerList.apiManager.list('dispatch');
+// 			workerList.apiManager.list('dispatch');
+// 			workerList.apiManager.getApi('webInit.listPaths')();
 		});
 
 	};
