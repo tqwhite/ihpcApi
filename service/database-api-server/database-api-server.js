@@ -42,7 +42,17 @@ var moduleFunction = function(args) {
 	//mongoose is a GLOBAL (yuck). It is also used by 
 	// service/message-tool/message-tools.js 
 	
-	let db = mongoose.connect(this.config.database.connectionString).connection;
+	let db;
+	if (this.config.database.autoCheckIndexes=='false'){
+	console.log("database autoIndex is disabled");
+	db = mongoose.connect(this.config.database.connectionString, { config: { autoIndex: false } }).connection;
+	}
+	else{
+	console.log("database autoIndex is enabled");
+	db = mongoose.connect(this.config.database.connectionString, { config: { autoIndex: true } }).connection;
+	}
+
+
 
 	let workerList = {};
 
