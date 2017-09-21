@@ -59,7 +59,7 @@ var moduleFunction = function(args) {
 	//LOCAL FUNCTIONS ====================================
 
 	const startSystem = () => {
-
+		console.log(`Connected to ${this.config.database.connectionString}`);
 		const startList = [];
 		
 		//note, this is a series worklist. Order matters.
