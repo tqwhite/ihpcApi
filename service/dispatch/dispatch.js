@@ -55,6 +55,7 @@ var moduleFunction = function(args) {
 			new utilityServerGen({
 				config: this.config,
 				router: this.router,
+				apiManager:this.apiManager.init(workerName, 'newRoot'),
 				permissionMaster: this.permissionMaster,
 				initCallback: function() {
 					workerList[workerName] = this; done();
