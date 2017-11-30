@@ -67,48 +67,46 @@ var moduleFunction = function(args) {
 
 	//START SERVER ROUTING FUNCTION =======================================================
 
-	const encipher = (inData, secret) => {
+	const encipher = (inData, secret, salt) => {
 		secret = secret ? secret : this.config.system.secret;
+		salt = salt ? salt : secret;
 
 		const cryptoLocal = require('crypto');
 
-		const cipher = cryptoLocal.createCipher('aes192', secret);
+		const cipher = cryptoLocal.createCipher('aes-256-cbc', secret + salt);
 		var encrypted = cipher.update(inData, 'utf8', 'hex');
 		encrypted += cipher.final('hex');
 
 		return encrypted;
 	};
 
-	const decipher = (confirmationKey, secret) => {
-		secret=secret?secret:this.config.system.secret;
+	const decipher = (encryptedData, secret, salt) => {
+		secret = secret ? secret : this.config.system.secret;
+		salt = salt ? salt : secret;
 		const crypto = require('crypto');
-		const decipher = crypto.createDecipher('aes192', secret);
+		const decipher = crypto.createDecipher('aes-256-cbc', secret + salt);
 
-		var decrypted = '';
-		decipher.on('readable', () => {
-			var data = decipher.read();
-			if (data) {
-				decrypted += data.toString('utf8');
-			}
-		});
-		decipher.on('end', () => {
-		});
+		let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+		//decrypted+=decipher.final('utf8'); //this gives a wrong block size error if hex is changed to base64, works for this without it
 
-		decipher.write(confirmationKey, 'hex');
-		decipher.end();
-
-		return decrypted;
+		return decrypted.toString();
 	};
+
+	if (this.config.system.baseDomain == 'careplanner.local') {
+		console.log(
+			`\n\nhttp://${this.config.system.baseDomain}/api/utility/transactionToken/{"storeId":"tqw","months":"12","role":"nurse","transactionId":"1234","secret":"${this.config.storeData.rsp1.secret}"}\n\n`
+		);
+	}
 
 	let route = new RegExp('utility/transactionToken/.*$');
 	this.permissionMaster.addRoute('get', route, 'all');
-	this.router.get(route, function(req, res, next) {
+	this.router.get(route, (req, res, next) => {
 		const tmpJsonInput = req.path.match(/utility\/transactionToken\/(.*)$/);
 		const inData = JSON.parse(tmpJsonInput[1]);
 		const secret = inData.secret;
 		const tokenString = `${inData.transactionId}_${inData.months}_${inData.role}_${inData.storeId}`;
 
-		const newToken = `${inData.storeId}_${inData.transactionId}_${encipher(tokenString, secret)}`;
+		const newToken = `${inData.storeId}_${inData.transactionId}_${encipher(tokenString, secret, inData.transactionId)}`;
 
 		res.set({
 			'content-type': 'application/json;charset=utf-8',
@@ -117,13 +115,15 @@ var moduleFunction = function(args) {
 			responsesource: 'utilityServer',
 			connection: 'Close'
 		});
-
+		
 		res.json({
 			status: `hello from ${self.config.system.name} ${self.config.user}${req.path} GET`,
 			headers: req.headers,
 			body: req.body,
 			query: req.query,
-			token: newToken
+			token: newToken,
+			claims: tokenString+String.fromCharCode(11),
+			url: `${req.protocol}://${this.config.system.baseDomain}/updateSubscription/${newToken}`
 		});
 	});
 
@@ -144,13 +144,11 @@ var moduleFunction = function(args) {
 			query: req.query
 		});
 	});
-	
+
 	//INITIALIZATION ====================================
 
 	this.apiManager.registerApi('encipher', encipher);
 	this.apiManager.registerApi('decipher', decipher);
-	
-	
 
 	this.initCallback();
 	return this;

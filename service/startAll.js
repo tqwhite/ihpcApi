@@ -13,27 +13,30 @@ const staticPageDispatch = require('./staticPageDispatch');
 //START OF moduleFunction() ============================================================
 
 var moduleFunction = function() {
-
 	//VALIDATION ====================================
 
 	if (!process.env.srapiProjectPath) {
-		var message = "there must be an environment variable: srapiProjectPath";
+		var message = 'there must be an environment variable: srapiProjectPath';
 
 		console.log(message);
-		return (message);
+		return message;
 	}
 	if (!process.env.USER) {
-		var message = "there must be an environment variable: USER";
+		var message = 'there must be an environment variable: USER';
 
 		console.log(message);
-		return (message);
+		return message;
 	}
-	var configPath = process.env.srapiProjectPath + 'configs/instanceSpecific/ini/' + process.env.USER + '.ini';
+	var configPath =
+		process.env.srapiProjectPath +
+		'configs/instanceSpecific/ini/' +
+		process.env.USER +
+		'.ini';
 	if (!qtools.realPath(configPath)) {
-		var message = "configuration file " + configPath + " is missing";
+		var message = 'configuration file ' + configPath + ' is missing';
 
 		console.log(message);
-		return (message);
+		return message;
 	}
 
 	//LOCAL VARIABLES ====================================
@@ -46,15 +49,34 @@ var moduleFunction = function() {
 	//METHODS AND PROPERTIES ====================================
 
 	//INITIALIZATION ====================================
-	
+
 	/*
 		Be aware: This application is organized to allow access
 		based on a JSON Web Token. In addition to initializing expressjs
 		web-init initalizes the permissionMaster. Before an
 		expressjs route is acted upon, it has to be approved by
 		permissionMaster. 
-	
+
 	*/
+
+	const upgradeConfigItems = config => {
+		const outObj = qtools.clone(config);
+
+		for (var i in config.arrayItems) {
+			var element = config.arrayItems[i];
+			qtools.putSurePath(outObj, element, 'placeholder');
+
+			const inObj = qtools.getSurePath(config, element, []);
+
+			const outArray = [];
+			for (i in inObj) {
+				outArray[i] = inObj[i];
+			}
+			qtools.putSurePath(outObj, element, outArray);
+		}
+
+		return outObj;
+	};
 
 	let config;
 
@@ -62,63 +84,77 @@ var moduleFunction = function() {
 		config = multiIni.read(configPath);
 		config.user = process.env.USER;
 
+		config = upgradeConfigItems(config);
+
+
+
 		const startList = [];
 
-		startList.push((done) => {
-			const workerName = 'apiManager'
+		startList.push(done => {
+			const workerName = 'apiManager';
 			new apiManager({
 				config: config,
 				initCallback: function() {
-					workerList[workerName] = this; done();
+					workerList[workerName] = this;
+					done();
 				}
 			});
 		});
 
-		startList.push((done) => {
-			const workerName = 'webInit'
+		startList.push(done => {
+			const workerName = 'webInit';
 			new webInit({
 				config: config,
 				apiManager: workerList.apiManager.init(workerName),
 				initCallback: function() {
-					workerList[workerName] = this; done();
+					workerList[workerName] = this;
+					done();
 				}
 			});
 		});
 
-		startList.push((done) => {
-			const workerName = 'dispatch'
+		startList.push(done => {
+			const workerName = 'dispatch';
 			new dispatchGen({
 				config: config,
 				apiManager: workerList.apiManager.init(workerName),
 				router: workerList.webInit.router,
 				permissionMaster: workerList.webInit.permissionMaster,
 				initCallback: function() {
-					workerList[workerName] = this; done();
+					workerList[workerName] = this;
+					done();
 				}
 			});
 		});
 
-		startList.push((done) => {
-			const workerName = 'staticPageDispatch/'
+		startList.push(done => {
+			const workerName = 'staticPageDispatch/';
 			new staticPageDispatch({
-				filePathList:qtools.convertNumericObjectToArray(config.system.staticPageLibraryFilePathList),
+				filePathList: qtools.convertNumericObjectToArray(
+					config.system.staticPageLibraryFilePathList
+				),
 				router: workerList.webInit.router,
-				reportPath:(urlSegment)=>{
-					workerList.apiManager.getApi('databaseApiServer.bookNumbers.users.session.boilerplate.registerStaticPath')(urlSegment);
-					workerList.webInit.permissionMaster.getAccessControl({clientName:workerName, role:'all'})(urlSegment);
-					},
+				reportPath: urlSegment => {
+					workerList.apiManager.getApi(
+						'databaseApiServer.bookNumbers.users.session.boilerplate.registerStaticPath'
+					)(urlSegment);
+					workerList.webInit.permissionMaster.getAccessControl({
+						clientName: workerName,
+						role: 'all'
+					})(urlSegment);
+				},
 				initCallback: function() {
-					workerList[workerName] = this; done();
+					workerList[workerName] = this;
+					done();
 				}
 			});
 		});
 
 		async.series(startList, () => {
 			workerList.webInit.startServer();
-// 			workerList.apiManager.list('dispatch');
-// 			workerList.apiManager.getApi('webInit.listPaths')();
+			// 			workerList.apiManager.list('dispatch');
+			// 			workerList.apiManager.getApi('webInit.listPaths')();
 		});
-
 	};
 
 	const cleanup = () => {
@@ -127,10 +163,12 @@ var moduleFunction = function() {
 			workerList[i] = null;
 			nameString += `${i}, `;
 		}
-		qtools.message(`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`);
+		qtools.message(
+			`[${nameString.replace(/, $/, '')}] were flushed at ${Date.now()}`
+		);
 
 		workerList = {};
-	}
+	};
 
 	//START SYSTEM =======================================================
 	startSystem();
@@ -140,19 +178,18 @@ var moduleFunction = function() {
 	// 		config: config
 	// 	});
 	// 	workerList.push(workerList.dispatch);
-	
 
 	//SET UP SIGNAL LISTENERS =======================================================
 
-	const buildShutdownList = (message) => {
+	const buildShutdownList = message => {
 		const shutdownList = [];
 		for (var i in workerList) {
 			var worker = workerList[i];
 			shutdownList.push(
-				((i) => {
-					return (done) => {
-						workerList[i].shutdown(message, done)
-					}
+				(i => {
+					return done => {
+						workerList[i].shutdown(message, done);
+					};
 				})(i)
 			);
 		}
@@ -165,10 +202,9 @@ var moduleFunction = function() {
 			cleanup();
 			startSystem();
 		});
-	}
+	};
 
 	process.on('SIGINT', () => {
-
 		if (this.interruptInProcess) {
 			process.nextTick(() => {
 				this.interruptInProcess = false;
@@ -184,7 +220,6 @@ var moduleFunction = function() {
 	});
 
 	process.on('SIGTERM', () => {
-
 		if (this.interruptInProcess) {
 			process.nextTick(() => {
 				this.interruptInProcess = false;
@@ -203,4 +238,3 @@ var moduleFunction = function() {
 
 //module.exports = moduleFunction;
 module.exports = new moduleFunction();
-
