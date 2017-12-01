@@ -87,8 +87,8 @@ var moduleFunction = function(args) {
 		const decipher = crypto.createDecipher('aes-256-cbc', secret + salt);
 
 		let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-		//decrypted+=decipher.final('utf8'); //this gives a wrong block size error if hex is changed to base64, works for this without it
-
+		decrypted+=decipher.final('utf8'); //this gives a wrong block size error if hex is changed to base64, works for this without it
+		
 		return decrypted.toString();
 	};
 
