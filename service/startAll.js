@@ -2,13 +2,26 @@
 'use strict';
 const qtoolsGen = require('qtools');
 const qtools = new qtoolsGen(module);
-const multiIni = require('multi-ini');
 const async = require('async');
 
 const dispatchGen = require('./dispatch');
 const webInit = require('./web-init');
 const apiManager = require('./api-manager');
 const staticPageDispatch = require('./staticPageDispatch');
+
+let multiIni = require('multi-ini');
+multiIni= new multiIni.Class({
+	filters:[
+		(value)=>{
+			if (isNaN(+value)){
+				return value;
+			}
+			else{
+				return +value
+			}
+		}
+	]
+});
 
 //START OF moduleFunction() ============================================================
 
