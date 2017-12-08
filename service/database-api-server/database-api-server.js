@@ -44,11 +44,11 @@ var moduleFunction = function(args) {
 	
 	let db;
 	if (this.config.database.autoCheckIndexes=='false'){
-	console.log("database autoIndex is disabled");
+	qtools.logMilestone("database autoIndex is disabled");
 	db = mongoose.connect(this.config.database.connectionString, { config: { autoIndex: false } }).connection;
 	}
 	else{
-	console.log("database autoIndex is enabled");
+	qtools.logMilestone("database autoIndex is enabled");
 	db = mongoose.connect(this.config.database.connectionString, { config: { autoIndex: true } }).connection;
 	}
 

@@ -93,8 +93,8 @@ var moduleFunction = function(args) {
 	};
 
 	if (this.config.system.baseDomain == 'careplanner.local') {
-		console.log(
-			`\n\nhttp://${this.config.system.baseDomain}/api/utility/transactionToken/{"storeId":"tqw","months":"12","role":"nurse","transactionId":"1234","secret":"${this.config.storeData.rsp1.secret}"}\n\n`
+		qtools.logDev(
+			`\n\nhttp://${this.config.system.baseDomain}/api/utility/transactionToken/{"storeId":"tqw","months":"12","role":"nurse","transactionId":"1234","secret":"${this.config.storeData.rsp1.secret}"}\n shows only on careplanner.local\n\n`
 		);
 	}
 

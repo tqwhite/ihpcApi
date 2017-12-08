@@ -30,14 +30,12 @@ var moduleFunction = function() {
 
 	if (!process.env.srapiProjectPath) {
 		var message = 'there must be an environment variable: srapiProjectPath';
-
-		console.log(message);
+		qtools.logError(message);
 		return message;
 	}
 	if (!process.env.USER) {
 		var message = 'there must be an environment variable: USER';
-
-		console.log(message);
+		qtools.logError(message);
 		return message;
 	}
 	var configPath =
@@ -47,8 +45,7 @@ var moduleFunction = function() {
 		'.ini';
 	if (!qtools.realPath(configPath)) {
 		var message = 'configuration file ' + configPath + ' is missing';
-
-		console.log(message);
+		qtools.logError(message);
 		return message;
 	}
 
@@ -98,8 +95,8 @@ var moduleFunction = function() {
 		config.user = process.env.USER;
 
 		config = upgradeConfigItems(config);
-
-
+		global.applicationLoggingIdString=config.system.applicationLoggingIdString;
+		qtools.logNote(`\n**==*: Starting ${config.system.name} SERVER\n`);
 
 		const startList = [];
 
