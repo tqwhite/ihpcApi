@@ -155,6 +155,21 @@ var moduleFunction = function(args) {
 			});
 		});
 
+		const paymentGen = require('payment');
+		startList.push((done) => {
+			const workerName = 'payment'
+			new paymentGen({
+				config: this.config,
+				router: this.router,
+				apiManager:this.apiManager.init(workerName),
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
 		const backupGen = require('backup-database');
 		startList.push((done) => {
 			const workerName = 'backup-database'
