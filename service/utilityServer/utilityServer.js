@@ -84,18 +84,31 @@ var moduleFunction = function(args) {
 		secret = secret ? secret : this.config.system.secret;
 		salt = salt ? salt : secret;
 		const crypto = require('crypto');
-		const decipher = crypto.createDecipher('aes-256-cbc', secret + salt);
+		let decrypted;
+		try {
+			const decipher = crypto.createDecipher('aes-256-cbc', secret + salt);
 
-		let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-		decrypted+=decipher.final('utf8'); //this gives a wrong block size error if hex is changed to base64, works for this without it
-		
+			decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+			decrypted += decipher.final('utf8'); //this gives a wrong block size error if hex is changed to base64, works for this without it
+		} catch (e) {
+			return { errmsg: e.toString() };
+		}
 		return decrypted.toString();
 	};
 
 	if (this.config.system.baseDomain == 'careplanner.local') {
-		qtools.logDev(
-			`\n\nhttp://${this.config.system.baseDomain}/api/utility/transactionToken/{"storeId":"tqw","months":"12","role":"nurse","transactionId":"1234","secret":"${this.config.storeData.rsp1.secret}"}\n shows only on careplanner.local\n\n`
-		);
+		const stores = Object.keys(this.config.storeData);
+		qtools.logDev(`================ ================\n`);
+		stores.forEach(storeId => {
+			qtools.logDev(
+				`\n${storeId.toUpperCase()} (only on careplanner.local)\nhttps://${
+					this.config.system.baseDomain
+				}/api/utility/transactionToken/{"storeId":"${storeId}","months":"12","role":"nurse","transactionId":"${Math.floor(
+					Math.random() * 100000
+				)}","secret":"${this.config.storeData[storeId].secret}"}\n\n `
+			);
+		});
+		qtools.logDev(`================ ================/n`);
 	}
 
 	let route = new RegExp('utility/transactionToken/.*$');
@@ -104,9 +117,15 @@ var moduleFunction = function(args) {
 		const tmpJsonInput = req.path.match(/utility\/transactionToken\/(.*)$/);
 		const inData = JSON.parse(tmpJsonInput[1]);
 		const secret = inData.secret;
-		const tokenString = `${inData.transactionId}_${inData.months}_${inData.role}_${inData.storeId}`;
+		const tokenString = `${inData.transactionId}_${inData.months}_${
+			inData.role
+		}_${inData.storeId}`;
 
-		const newToken = `${inData.storeId}_${inData.transactionId}_${encipher(tokenString, secret, inData.transactionId)}`;
+		const newToken = `${inData.storeId}_${inData.transactionId}_${encipher(
+			tokenString,
+			secret,
+			inData.transactionId
+		)}`;
 
 		res.set({
 			'content-type': 'application/json;charset=utf-8',
@@ -115,15 +134,18 @@ var moduleFunction = function(args) {
 			responsesource: 'utilityServer',
 			connection: 'Close'
 		});
-		
 		res.json({
-			status: `hello from ${self.config.system.name} ${self.config.user}${req.path} GET`,
+			status: `hello from ${self.config.system.name} ${self.config.user}${
+				req.path
+			} GET`,
 			headers: req.headers,
 			body: req.body,
 			query: req.query,
 			token: newToken,
-			claims: tokenString+String.fromCharCode(11),
-			url: `${req.protocol}://${this.config.system.baseDomain}/updateSubscription/${newToken}`
+			claims: tokenString + String.fromCharCode(11),
+			url: `https://${
+				this.config.system.baseDomain
+			}/updateSubscription/${newToken}`
 		});
 	});
 
