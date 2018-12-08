@@ -98,17 +98,17 @@ var moduleFunction = function(args) {
 
 	if (this.config.system.baseDomain == 'careplanner.local') {
 		const stores = Object.keys(this.config.storeData);
-		qtools.logDev(`================ ================\n`);
-		stores.forEach(storeId => {
-			qtools.logDev(
-				`\n${storeId.toUpperCase()} (only on careplanner.local)\nhttps://${
-					this.config.system.baseDomain
-				}/api/utility/transactionToken/{"storeId":"${storeId}","months":"12","role":"nurse","transactionId":"${Math.floor(
-					Math.random() * 100000
-				)}","secret":"${this.config.storeData[storeId].secret}"}\n\n `
-			);
-		});
-		qtools.logDev(`================ ================/n`);
+// 		qtools.logDev(`================ ================\n`);
+// 		stores.forEach(storeId => {
+// 			qtools.logDev(
+// 				`\n${storeId.toUpperCase()} (only on careplanner.local)\nhttps://${
+// 					this.config.system.baseDomain
+// 				}/api/utility/transactionToken/{"storeId":"${storeId}","months":"12","role":"nurse","transactionId":"${Math.floor(
+// 					Math.random() * 100000
+// 				)}","secret":"${this.config.storeData[storeId].secret}"}\n\n `
+// 			);
+// 		});
+// 		qtools.logDev(`================ ================/n`);
 	}
 
 	let route = new RegExp('utility/transactionToken/.*$');
