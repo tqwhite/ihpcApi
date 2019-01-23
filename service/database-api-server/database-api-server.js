@@ -125,21 +125,13 @@ var moduleFunction = function(args) {
 			});
 		});
 		
+		/*
+			If new apiManager clients are added, put them at the
+			end of the list to avoid breaking. New workers add 
+			to the name string.
+			In future, always add newRoot.
+		*/
 		
-
-		const studentsGen = require('students');
-		startList.push((done) => {
-			const workerName = 'students'
-			new studentsGen({
-				config: this.config,
-				router: this.router,
-				permissionMaster: this.permissionMaster,
-				mongoose: mongoose,
-				initCallback: function() {
-					workerList[workerName] = this; done();
-				}
-			});
-		});
 
 		const plansGen = require('plans');
 		startList.push((done) => {
@@ -175,6 +167,36 @@ var moduleFunction = function(args) {
 			const workerName = 'backup-database'
 			new backupGen({
 				config: this.config,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		const transferGen = require('transfer');
+		startList.push((done) => {
+			const workerName = 'transfer'
+			new transferGen({
+				config: this.config,
+				router: this.router,
+				apiManager:this.apiManager.init(workerName),
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
+		const studentsGen = require('students');
+		startList.push((done) => {
+			const workerName = 'students'
+			new studentsGen({
+				config: this.config,
+				router: this.router,
+				apiManager:this.apiManager.init(workerName),
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
 				initCallback: function() {
 					workerList[workerName] = this; done();
 				}
