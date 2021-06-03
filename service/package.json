@@ -4,8 +4,6 @@
   "description": "Sunrise Care Planner API application",
   "main": "startAll.js",
   "dependencies": {
-    "mongodb": "^2.1.18",
-    "mongoose": "^4.5.2",
     "multi-ini": "^0.5.2",
     "qtools-parse-command-line": "^1.0.5"
   },
