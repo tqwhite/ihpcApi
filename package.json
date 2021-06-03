@@ -4,10 +4,17 @@
   "description": "initializer for Generic White ",
   "main": "startAll.js",
   "dependencies": {
-    "body-parser": "^1.15.1",
+    "asynchronous-pipe": "file:node_modules_local_repo/asynchronous-pipe",
+    "body-parser": "^1.19.0",
     "dayjs": "^1.10.5",
-    "express": "^4.14.0",
-    "multi-ini": "^0.5.2"
+    "express": "^4.17.1",
+    "multi-ini": "^0.5.2",
+    "nodemailer": "^6.6.1",
+    "nodemailer-smtp-transport": "^2.7.4",
+    "qtfunctionallib": "file:node_modules_local_repo/qtFunctionalLib",
+    "qtools": "file:node_modules_local_repo/qtools",
+    "qtools-functional-library": "^1.1.7",
+    "qtools-parse-command-line": "^1.0.5"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
