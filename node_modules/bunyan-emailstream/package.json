@@ -1,0 +1,41 @@
+{
+  "name": "bunyan-emailstream",
+  "version": "1.0.0",
+  "description": "Send email on bunyan log record",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyjin/bunyan-emailstream.git"
+  },
+  "keywords": [
+    "bunyan",
+    "email",
+    "stream"
+  ],
+  "author": {
+    "name": "Hyungjin Kim",
+    "email": "kim@hyjin.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hyjin/bunyan-emailstream/issues"
+  },
+  "homepage": "https://github.com/hyjin/bunyan-emailstream",
+  "dependencies": {
+    "nodemailer": "~0.6.x"
+  },
+  "devDependencies": {
+    "bunyan": "~0.22.1"
+  },
+  "readme": "bunyan-emailstream\n==================\n\nSend email on bunyan log record.\n\nThis module is cheap way to send email on\n[bunyan](https://github.com/trentm/node-bunyan) log record using\n[nodemailer](https://github.com/andris9/Nodemailer).\n\n## Quick Usage Example\n\nHere is a simple example to send 'fatal' level log messages to\n`me@example.com`.\n\n```js\nvar bunyan = require('bunyan');\nvar EmailStream = require('bunyan-emailstream').EmailStream;\n\nvar emailStream = new EmailStream({\n    to: 'me@example.com'\n});\n\nvar myLogger = bunyan.createLogger({\n    name: 'SleepBreaker',\n    streams: [{\n        type: 'raw', // You should use EmailStream with 'raw' type!\n        stream: emailStream,\n        level: 'fatal',\n    }\n        // Some other streams you want\n    ]\n});\n\nmyLogger.fatal(new Error('No sweet sleep anymore'), 'Something bad happened');\n\n```\n\nAbove will send email like this\n\n```\nX-Mailer: Nodemailer (0.6.0; +http://github.com/andris9/nodemailer; stub)\nDate: Thu, 06 Feb 2014 09:14:00 GMT\nMessage-Id: <87f6c7df4f5d8b178e9cc798404d9a@localhost.local>\nTo: me@example.com\nSubject: [FATAL] SleepBreaker/33973 on localhost.local\nContent-Type: text/plain; charset=utf-8\nContent-Transfer-Encoding: quoted-printable\nMIME-Version: 1.0\n\n* name: SleepBreaker\n* hostname: localhost.local\n* pid: 33973\n* time: Thu Feb 06 2014 16:59:12 GMT+0900 (JST)\n* msg: Something bad happened\n* err.stack: Error: No sweet sleep anymore\n    at Object.<anonymous> (/Somewhere/Of/Code/badass.js:19:16)\n    ...\n    at node.js:902:3\n```\n\n## Installation\n\n```\nnpm install bunyan-emailstream\n```\n\n## Usage\n\nInclude the module\n\n```js\nvar EmailStream = require('bunyan-emailstream').EmailStream;\n```\n\nCreate stream instance\n\n```js\nvar emailStream = new EmailStream(mailOptions, transportOptions);\n```\n\nWhere,\n* _mailOptions_ is options of composing email message. see\n[mailOptions](#mailOptions) section.\n* transportOptions is options for nodemailer's transport. see\n[transportOptions](#transportOptions) section.\n\nPass to bunyan logger as a 'raw' type stream\n\n```js\nbunyan.createLogger({\n    streams: [{\n        type: 'raw', // You should use EmailStream with 'raw' type!\n        stream: emailStream,\n        level: 'fatal', // I bet you don't want to set 'debug' level\n    }\n);\n```\n\nEmail will be sent on log level you set.\nBelow is an example of setting sending email on uncaught exception.\n\n```js\nprocess.on('uncaughtException', function (err) {\n    logger.fatal(err, 'Something bas happened');\n    process.exit(1);\n});\n```\n### Coniguration\n#### mailOptions (required)\n\nmailOptions will be passed to `nodemail.transport.sendMail()` when log\nrecord comes via `EmailStream#write`.\nSee [nodemailer document](https://github.com/andris9/Nodemailer/blob/master/README.md#e-mail-message-fields)\nfor full list of options.\n\n#### transportOptions\n\n* **type**: _(optional)_ transport type passed to `nodemail.createTransport()`. Default is 'SENDMAIL'.\n\nExcept `type` property, the option object will be passed to\n`nodemail.createTransport()`.\nSee [nodemailer document](https://github.com/andris9/Nodemailer/blob/master/README.md)\nfor available transport and full list of options.\n\n### Events\n\n#### Event: `mailSent`\n\nThis event will be emitted on callback of\n`nodemailer.transport.sendMail()`. The arguments passed to event listeners\nare identical to `responseStatus` object described at [nodemailer \ndocument](https://github.com/andris9/Nodemailer/blob/master/README.md#return-callback)\n\n#### Event: `error`\n\nIn addition to any possible case of stream's error event, the `error`\nevent will be emitted when `nodemailer.transport.sendMail` callback with error.\n\n### Message Customization\n\n#### Body formatter\n\n`EmailFormatter#bodyFormatter` will be called in order to format body\ntext.\n\nYou can set your own formatter like this:\n\n```js\nemailStream.bodyFormatter = function (log) {\n    // log is bunyan log record object\n\n    var rows = [];\n    rows.push('* name: ' + log.name);\n    rows.push('* hostname: ' + log.hostname);\n    rows.push('* pid: ' + log.pid);\n    rows.push('* time: ' + log.time);\n\n    if (log.msg) {\n        rows.push('* msg: ' + log.msg);\n    }\n\n    if (log.err) {\n        rows.push('* err.stack: ' + log.err.stack);\n    }\n\n    return rows.join('\\n');\n});\n```\n\n#### Subject formatter\n\nJust like body formatter, `EmailFormatter#subjectFormatter` will be\ncalled in order to format body text.\n\nYou can set your own formatter like this:\n\n```js\nemailStream.subjectFormatter = function (log) {\n    // log is bunyan log record object\n\n    return util.format(\n        '[%s] %s/%s on %s',\n        levelName(log.level),\n        log.name,\n        log.pid,\n        log.hostname\n    );\n});\n```\n\n## Any questions about this module?\n\n* Source code will explain much more.\n* Create some issue to poke me.\n\n## License\n\n[MIT license](https://github.com/hyjin/bunyan-emailstream/blob/master/LICENSE).\n\n",
+  "readmeFilename": "README.md",
+  "_id": "bunyan-emailstream@1.0.0",
+  "dist": {
+    "shasum": "8c1103be06cdc1a21297b8bb738e0d0dc8f29b1a"
+  },
+  "_from": "bunyan-emailstream@",
+  "_resolved": "https://registry.npmjs.org/bunyan-emailstream/-/bunyan-emailstream-1.0.0.tgz"
+}

@@ -1,0 +1,77 @@
+{
+  "_args": [
+    [
+      "curry@0.0.x",
+      "/Users/tqwhite/node_modules/traverser"
+    ]
+  ],
+  "_defaultsLoaded": true,
+  "_engineSupported": true,
+  "_from": "curry@>=0.0.0 <0.1.0",
+  "_id": "curry@0.0.4",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/curry",
+  "_nodeVersion": "v0.4.10",
+  "_npmJsonOpts": {
+    "contributors": false,
+    "file": "/home/dominic/.npm/curry/0.0.4/package/package.json",
+    "serverjs": false,
+    "wscript": false
+  },
+  "_npmVersion": "1.0.27",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "curry",
+    "raw": "curry@0.0.x",
+    "rawSpec": "0.0.x",
+    "scope": null,
+    "spec": ">=0.0.0 <0.1.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/traverser"
+  ],
+  "_resolved": "https://registry.npmjs.org/curry/-/curry-0.0.4.tgz",
+  "_shasum": "1750d518d919c44f3d37ff44edc693de1f0d5fcb",
+  "_shrinkwrap": null,
+  "_spec": "curry@0.0.x",
+  "_where": "/Users/tqwhite/node_modules/traverser",
+  "author": {
+    "email": "dominic.tarr@gmail.com",
+    "name": "Dominic Tarr"
+  },
+  "bugs": {
+    "url": "https://github.com/dominictarr/curry/issues"
+  },
+  "dependencies": {},
+  "description": "flexible but simple curry function",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "1750d518d919c44f3d37ff44edc693de1f0d5fcb",
+    "tarball": "http://registry.npmjs.org/curry/-/curry-0.0.4.tgz"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "homepage": "https://github.com/dominictarr/curry",
+  "main": "./curry",
+  "maintainers": [
+    {
+      "name": "dominictarr",
+      "email": "dominic.tarr@gmail.com"
+    }
+  ],
+  "name": "curry",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dominictarr/curry.git"
+  },
+  "scripts": {
+    "test": "synct test/*.js"
+  },
+  "version": "0.0.4"
+}

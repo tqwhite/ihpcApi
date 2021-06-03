@@ -1,0 +1,59 @@
+{
+  "_from": "fs-walk",
+  "_id": "fs-walk@0.0.2",
+  "_inBundle": false,
+  "_integrity": "sha1-IhA4W9vDKrUZM87lAu8YUWeXYE0=",
+  "_location": "/fs-walk",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "fs-walk",
+    "name": "fs-walk",
+    "escapedName": "fs-walk",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/fs-walk/-/fs-walk-0.0.2.tgz",
+  "_shasum": "2210385bdbc32ab51933cee502ef18516797604d",
+  "_spec": "fs-walk",
+  "_where": "/Users/tqwhite/Documents/webdev/pdfMailer/system/code/service/invoicer/node_modules",
+  "author": {
+    "name": "Alberto Gonzalez"
+  },
+  "bugs": {
+    "url": "https://github.com/confcompass/fs-walk/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "async": "*"
+  },
+  "deprecated": false,
+  "description": "Synchronous and asynchronous recursive directory listing for node",
+  "devDependencies": {
+    "better-assert": "~1.0.0",
+    "mocha": "~1.14.0"
+  },
+  "homepage": "https://github.com/confcompass/fs-walk#readme",
+  "keywords": [
+    "list",
+    "walk",
+    "directory",
+    "fs"
+  ],
+  "license": "MIT",
+  "name": "fs-walk",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/confcompass/fs-walk.git"
+  },
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "version": "0.0.2"
+}
