@@ -10,7 +10,7 @@
     "express": "^4.17.1",
     "lodash": "^4.17.21",
     "mongod": "^2.0.0",
-    "mongoose": "^5.12.12",
+    "mongoose": "^5.12.14",
     "multi-ini": "^2.1.2",
     "nodemailer": "^6.6.1",
     "nodemailer-smtp-transport": "^2.7.4",
