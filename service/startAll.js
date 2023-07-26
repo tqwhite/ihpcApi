@@ -28,8 +28,6 @@ multiIni= new multiIni.Class({
 var moduleFunction = function() {
 	//VALIDATION ====================================
 
-console.dir(process.env);
-
 	if (!process.env.srapiProjectPath) {
 		var message = 'there must be an environment variable: srapiProjectPath';
 		qtools.logError(message);

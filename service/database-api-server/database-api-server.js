@@ -188,6 +188,21 @@ var moduleFunction = function(args) {
 			});
 		});
 
+		const districtGenGen = require('districts');
+		startList.push((done) => {
+			const workerName = 'districts'
+			new districtGenGen({
+				config: this.config,
+				router: this.router,
+				apiManager:this.apiManager.init(workerName),
+				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+
 		const studentsGen = require('students');
 		startList.push((done) => {
 			const workerName = 'students'
