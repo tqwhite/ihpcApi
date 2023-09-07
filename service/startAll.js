@@ -96,7 +96,7 @@ var moduleFunction = function() {
 
 		config = upgradeConfigItems(config);
 		global.applicationLoggingIdString=config.system.applicationLoggingIdString;
-		qtools.logNote(`\n**==*: Starting ${config.system.name} SERVER\n`);
+		qtools.logNote(`\n**==*: Starting ${config.system.name} SERVER XXX  \n`);
 
 		const startList = [];
 
