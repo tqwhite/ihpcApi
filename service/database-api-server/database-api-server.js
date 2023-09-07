@@ -126,9 +126,19 @@ var moduleFunction = function(args) {
 		});
 		
 		/*
-			If new apiManager clients are added, put them at the
-			end of the list to avoid breaking. New workers add 
-			to the name string.
+			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
+			END OF THE LIST TO AVOID BREAKING.
+			
+			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
+			END OF THE LIST TO AVOID BREAKING.
+			
+			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
+			END OF THE LIST TO AVOID BREAKING.
+			
+			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
+			END OF THE LIST TO AVOID BREAKING.
+			
+			New workers add  to the name string.
 			In future, always add newRoot.
 		*/
 		
@@ -212,6 +222,22 @@ var moduleFunction = function(args) {
 				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
 				mongoose: mongoose,
+				initCallback: function() {
+					workerList[workerName] = this; done();
+				}
+			});
+		});
+		
+		
+
+		const singleSignOnGen = require('./lib/single-sign-on');
+		startList.push((done) => {
+			const workerName = 'singleSignOn'
+			new singleSignOnGen({
+				config: this.config,
+				router: this.router,
+				apiManager:this.apiManager.init(workerName),
+				permissionMaster: this.permissionMaster,
 				initCallback: function() {
 					workerList[workerName] = this; done();
 				}
