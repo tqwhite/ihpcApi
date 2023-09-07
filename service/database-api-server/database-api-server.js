@@ -126,19 +126,9 @@ var moduleFunction = function(args) {
 		});
 		
 		/*
-			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
-			END OF THE LIST TO AVOID BREAKING.
-			
-			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
-			END OF THE LIST TO AVOID BREAKING.
-			
-			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
-			END OF THE LIST TO AVOID BREAKING.
-			
-			IF NEW APIMANAGER CLIENTS ARE ADDED, PUT THEM AT THE
-			END OF THE LIST TO AVOID BREAKING.
-			
-			New workers add  to the name string.
+			If new apiManager clients are added, put them at the
+			end of the list to avoid breaking. New workers add 
+			to the name string.
 			In future, always add newRoot.
 		*/
 		
@@ -198,21 +188,6 @@ var moduleFunction = function(args) {
 			});
 		});
 
-		const districtGenGen = require('districts');
-		startList.push((done) => {
-			const workerName = 'districts'
-			new districtGenGen({
-				config: this.config,
-				router: this.router,
-				apiManager:this.apiManager.init(workerName),
-				permissionMaster: this.permissionMaster,
-				mongoose: mongoose,
-				initCallback: function() {
-					workerList[workerName] = this; done();
-				}
-			});
-		});
-
 		const studentsGen = require('students');
 		startList.push((done) => {
 			const workerName = 'students'
@@ -227,17 +202,16 @@ var moduleFunction = function(args) {
 				}
 			});
 		});
-		
-		
 
-		const singleSignOnGen = require('./lib/single-sign-on');
+		const districtGenGen = require('districts');
 		startList.push((done) => {
-			const workerName = 'singleSignOn'
-			new singleSignOnGen({
+			const workerName = 'districts'
+			new districtGenGen({
 				config: this.config,
 				router: this.router,
 				apiManager:this.apiManager.init(workerName),
 				permissionMaster: this.permissionMaster,
+				mongoose: mongoose,
 				initCallback: function() {
 					workerList[workerName] = this; done();
 				}
