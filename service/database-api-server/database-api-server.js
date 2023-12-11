@@ -5,6 +5,7 @@ const async = require('async');
 
 const mongoose = require('mongoose');
 
+const singleSignOnActual=require('./lib/single-sign-on');
 
 //START OF moduleFunction() ============================================================
 
@@ -49,6 +50,8 @@ var moduleFunction = function(args) {
 	}
 	else{
 	qtools.logMilestone("database autoIndex is enabled");
+console.log(`this.config.database.connectionString=${this.config.database.connectionString}`);
+
 	db = mongoose.connect(this.config.database.connectionString, { config: { autoIndex: true } }).connection;
 	}
 
@@ -98,6 +101,7 @@ var moduleFunction = function(args) {
 		startList.push((done) => {
 			const workerName = 'session'
 			new sessionsGen({
+				singleSignOn:singleSignOnActual({config: this.config}),
 				config: this.config,
 				router: this.router,
 				apiManager:this.apiManager.init(workerName),
