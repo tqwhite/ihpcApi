@@ -18,51 +18,63 @@ const util = require('util');
 
 const samlify = require('samlify');
 
-const xml2js = require('xml-js');
-
 // START OF moduleFunction() ============================================================
 
-const moduleFunction = function(args = {}) {
+const moduleFunction =  function(args = {}) {
 	// ====================================================================================
 	// UTILITY FUNCTIONS
 	
 	// ====================================================================================
 	// FINALFUNCTION FUNCTION
+	
 
-	const FINALFUNCTION = async ({ ssoToken, districtSpecs, requestBody, req }) => {
-const xml2js = require('xml-js');
+	const FINALFUNCTION = async ({
+		ssoToken,
+		districtSpecs,
+		requestBody,
+		req
+	}) => {
+		console.log(
+			`\n=-=============   FINALFUNCTION  ========================= [azure-msal-saml.js.moduleFunction]\n`
+		);
+
+
+		samlify.setSchemaValidator({
+			validate: response => {
+				/* implment your own or always returns a resolved promise to skip */
+				return Promise.resolve('skipped');
+			}
+		});
+
 		const serviceProvider = samlify.ServiceProvider(districtSpecs.authOptions);
 
-const idp = samlify.IdentityProvider({
-  metadata: fs.readFileSync('/Users/tqwhite/Documents/webdev/ihpCreator/applications/api/system/code/service/database-api-server/lib/single-sign-on/lib/IHPC SAML APP.xml')
-});
+		const idp = samlify.IdentityProvider({
+			metadata: fs.readFileSync(
+				'/Users/tqwhite/Documents/webdev/ihpCreator/applications/api/system/code/service/database-api-server/lib/single-sign-on/lib/IHPC SAML APP.xml'
+			)
+		});
 		let userDetails = {};
 		try {
-
 			const SAMLResponse = ssoToken;
-			const response = Buffer.from(SAMLResponse, 'base64').toString('utf-8');
-			const parsedResponse = xml2js.xml2js(response, { compact: true });
-
-			// Validate the SAML response
-console.log(`\n=-=============   parseLoginResponse  ========================= [azure-msal-saml.js.moduleFunction]\n`);
-
-
-
 
 			const { extract } = await serviceProvider.parseLoginResponse(
 				idp,
 				'post',
-				req
+				{
+					...req,
+					body: { SAMLResponse }
+				}
 			);
-console.log(`\n=-=============   parseLoginResponse 2 ========================= [azure-msal-saml.js.moduleFunction]\n`);
-
 
 			userDetails = extract.attributes;
 		} catch (error) {
 			console.error('Error processing SAML Response:', error);
 		}
+		
+		const userName =
+			userDetails['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
 
-		const { userName, password } = userDetails;
+		const password = 'unused';
 
 		return { userName, password };
 	};
@@ -74,7 +86,12 @@ console.log(`\n=-=============   parseLoginResponse 2 ========================= 
 	const getUserIdentity = async ({ requestBody, districtSpecs, req }) => {
 		const ssoToken = requestBody.qtGetSurePath('user.ssoToken');
 
-		const ssoAccount = await FINALFUNCTION({ ssoToken, districtSpecs, requestBody, req });
+		const ssoAccount = await FINALFUNCTION({
+			ssoToken,
+			districtSpecs,
+			requestBody,
+			req
+		});
 		return ssoAccount;
 	};
 

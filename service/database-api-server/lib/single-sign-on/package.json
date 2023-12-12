@@ -11,7 +11,6 @@
   "dependencies": {
     "@azure/msal-node": "^2.0.2",
     "jwks-rsa": "^3.0.1",
-    "samlify": "^2.8.10",
-    "xml-js": "^1.6.11"
+    "samlify": "^2.8.10"
   }
 }

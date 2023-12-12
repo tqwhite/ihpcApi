@@ -128,7 +128,12 @@ var moduleFunction = function({ config }) {
 		// ACCESS ACTUAL PROVIDER ==================================================
 
 		const providerSpecificFunctionsPath = `./lib/${ssoModuleName}`; // .../database-api-server/lib/single-sign-on/lib/azure-msal-functions.js
+console.log(`\n=-=============   providerSpecificFunctions  ========================= [single-sign-on.js.moduleFunction]\n`);
+
+
 		const providerSpecificFunctions = require(providerSpecificFunctionsPath)();
+
+
 
 		let ssoResult = await providerSpecificFunctions
 			.getUserIdentity({
@@ -137,10 +142,14 @@ var moduleFunction = function({ config }) {
 				req
 			})
 			.catch(error => {
+console.log(`\n=-=============   Error  ========================= [single-sign-on.js.moduleFunction]\n`);
+
+
 				throw new Error(
 					`error:Q15920233606436064111 ${error.toString()}  [single-sign-on.js.moduleFunction]`
 				);
 			});
+console.log(`\n=-=============   providerSpecificFunctions 2 ========================= [single-sign-on.js.moduleFunction]\n`);
 
 		console.log(`ssoResult=${ssoResult.length}`);
 
