@@ -22,6 +22,9 @@ const util = require('util');
 
 // START OF moduleFunction() ============================================================
 
+// ====================================================================================
+// CRAP THAT CAME WITH THE BOILERPLATE I STOLE AND I DON'T KNOW HOW TO USE
+	
 const webApiCachePlugin = (function(cacheLocation) {
 	const beforeCacheAccess = cacheContext => {
 		return new Promise((resolve, reject) => {
@@ -74,7 +77,7 @@ const webApiCachePlugin = (function(cacheLocation) {
 })('/tmp/msalCache');
 
 
-const moduleFunction = function(args = {}) {
+const moduleFunction = async function(args = {}) {
 	// ====================================================================================
 	// UTILITY FUNCTIONS
 
@@ -167,7 +170,6 @@ const moduleFunction = function(args = {}) {
 
 		return { userName, password };
 	};
-	// util.promisify()
 	
 	// ====================================================================================
 	// MAIN FUNCTION

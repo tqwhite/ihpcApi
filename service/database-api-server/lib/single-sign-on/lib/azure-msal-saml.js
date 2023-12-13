@@ -20,10 +20,33 @@ const samlify = require('samlify');
 
 // START OF moduleFunction() ============================================================
 
-const moduleFunction =  function(args = {}) {
+const moduleFunction = async function(args = {}) {
 	// ====================================================================================
 	// UTILITY FUNCTIONS
 	
+	const axios = require('axios');
+
+	let ihpcSamlAppXml;
+	const initXml = async districtSpecs => {
+		if (ihpcSamlAppXml){
+			console.log('using cached SAML XML');
+			return;
+		}
+		const {xmlUrl}=districtSpecs;
+		try {
+			const url =
+				xmlUrl;
+			const response = await axios.get(url);
+			ihpcSamlAppXml=response.data; //save to cache/closure variable
+		} catch (error) {
+				throw new Error(
+					`error:Q121220235658456584922 ${error.toString()}  [${moduleName}]`
+				);
+		}
+	};
+
+	
+
 	// ====================================================================================
 	// FINALFUNCTION FUNCTION
 	
@@ -37,8 +60,10 @@ const moduleFunction =  function(args = {}) {
 		console.log(
 			`\n=-=============   FINALFUNCTION  ========================= [azure-msal-saml.js.moduleFunction]\n`
 		);
-
-
+		
+		
+		await initXml(districtSpecs); // initializes cache/closure variable ihpcSamlAppXml
+		
 		samlify.setSchemaValidator({
 			validate: response => {
 				/* implment your own or always returns a resolved promise to skip */
@@ -46,13 +71,24 @@ const moduleFunction =  function(args = {}) {
 			}
 		});
 
-		const serviceProvider = samlify.ServiceProvider(districtSpecs.authOptions);
+		const assertionConsumerService=[
+						{
+							Binding: samlify.Constants.namespace.post,
+							Location: 'https://ihpc.qbook.work/SSO/saml/'
+						}
+					];
+
+
+		const serviceProvider = samlify.ServiceProvider({...districtSpecs.authOptions, assertionConsumerService});
+		
+		
+		
+		
 
 		const idp = samlify.IdentityProvider({
-			metadata: fs.readFileSync(
-				'/Users/tqwhite/Documents/webdev/ihpCreator/applications/api/system/code/service/database-api-server/lib/single-sign-on/lib/IHPC SAML APP.xml'
-			)
+			metadata: ihpcSamlAppXml
 		});
+		
 		let userDetails = {};
 		try {
 			const SAMLResponse = ssoToken;
@@ -65,12 +101,11 @@ const moduleFunction =  function(args = {}) {
 					body: { SAMLResponse }
 				}
 			);
-
 			userDetails = extract.attributes;
 		} catch (error) {
 			console.error('Error processing SAML Response:', error);
 		}
-		
+
 		const userName =
 			userDetails['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'];
 
