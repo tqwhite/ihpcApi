@@ -20,36 +20,34 @@ const samlify = require('samlify');
 
 // START OF moduleFunction() ============================================================
 
-const moduleFunction = async function(args = {}) {
+const moduleFunction = async function({systemConfig} = {}) {
 	// ====================================================================================
 	// UTILITY FUNCTIONS
-	
+
 	const axios = require('axios');
+	
+	const {baseUrl}=systemConfig;
 
 	let ihpcSamlAppXml;
 	const initXml = async districtSpecs => {
-		if (ihpcSamlAppXml){
+		if (ihpcSamlAppXml) {
 			console.log('using cached SAML XML');
 			return;
 		}
-		const {xmlUrl}=districtSpecs;
+		const { xmlUrl } = districtSpecs;
 		try {
-			const url =
-				xmlUrl;
+			const url = xmlUrl;
 			const response = await axios.get(url);
-			ihpcSamlAppXml=response.data; //save to cache/closure variable
+			ihpcSamlAppXml = response.data; //save to cache/closure variable
 		} catch (error) {
-				throw new Error(
-					`error:Q121220235658456584922 ${error.toString()}  [${moduleName}]`
-				);
+			throw new Error(
+				`error:Q121220235658456584922 ${error.toString()}  [${moduleName}]`
+			);
 		}
 	};
 
-	
-
 	// ====================================================================================
 	// FINALFUNCTION FUNCTION
-	
 
 	const FINALFUNCTION = async ({
 		ssoToken,
@@ -60,10 +58,9 @@ const moduleFunction = async function(args = {}) {
 		console.log(
 			`\n=-=============   FINALFUNCTION  ========================= [azure-msal-saml.js.moduleFunction]\n`
 		);
-		
-		
+
 		await initXml(districtSpecs); // initializes cache/closure variable ihpcSamlAppXml
-		
+
 		samlify.setSchemaValidator({
 			validate: response => {
 				/* implment your own or always returns a resolved promise to skip */
@@ -71,24 +68,23 @@ const moduleFunction = async function(args = {}) {
 			}
 		});
 
-		const assertionConsumerService=[
-						{
-							Binding: samlify.Constants.namespace.post,
-							Location: 'https://ihpc.qbook.work/SSO/saml/'
-						}
-					];
 
+		const assertionConsumerService = [
+			{
+				Binding: samlify.Constants.namespace.post,
+				Location: `${baseUrl}/SSO/saml/`, 
+			}
+		];// I think none of this is required.
 
-		const serviceProvider = samlify.ServiceProvider({...districtSpecs.authOptions, assertionConsumerService});
-		
-		
-		
-		
+		const serviceProvider = samlify.ServiceProvider({
+			...districtSpecs.authOptions,
+			assertionConsumerService
+		});
 
 		const idp = samlify.IdentityProvider({
 			metadata: ihpcSamlAppXml
 		});
-		
+
 		let userDetails = {};
 		try {
 			const SAMLResponse = ssoToken;

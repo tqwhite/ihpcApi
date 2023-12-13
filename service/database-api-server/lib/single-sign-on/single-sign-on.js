@@ -16,6 +16,7 @@ const generateKeyPair = promisify(crypto.generateKeyPair);
 var moduleFunction = function({ config: allConfigs }) {
 
 	const localConfig = allConfigs['single-sign-on'];
+	const systemConfig=allConfigs['system'];
 
 	let keyAlreadyExistsFlag = false;
 	async function generateKeys(tmpKey) {
@@ -72,7 +73,8 @@ var moduleFunction = function({ config: allConfigs }) {
 			}
 
 			if (value.toString().match(/tmpKey/)) {
-				value = tmpKey;
+				//value = tmpKey;
+				console.log(`Warning: msal apparently does not need private keys; omitting from ${name}`)
 			}
 
 			switch (value) {
@@ -122,7 +124,7 @@ var moduleFunction = function({ config: allConfigs }) {
 		Object.keys(districtConfigurations).forEach(
 			async name=>{
 				const modulePath=`./lib/${districtConfigurations[name].providerSpecificModuleName}`;
-				const moduleInstance=districtConfigurations[name].providerSpecificModule=await require(modulePath)();
+				const moduleInstance=districtConfigurations[name].providerSpecificModule=await require(modulePath)({systemConfig});
 				districtConfigurations[name].providerSpecificModule=moduleInstance;
 			})
 	};

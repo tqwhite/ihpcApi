@@ -24,7 +24,7 @@ const util = require('util');
 
 // ====================================================================================
 // CRAP THAT CAME WITH THE BOILERPLATE I STOLE AND I DON'T KNOW HOW TO USE
-	
+
 const webApiCachePlugin = (function(cacheLocation) {
 	const beforeCacheAccess = cacheContext => {
 		return new Promise((resolve, reject) => {
@@ -76,8 +76,7 @@ const webApiCachePlugin = (function(cacheLocation) {
 	};
 })('/tmp/msalCache');
 
-
-const moduleFunction = async function(args = {}) {
+const moduleFunction = async function({systemConfig} = {}) {
 	// ====================================================================================
 	// UTILITY FUNCTIONS
 
@@ -175,7 +174,6 @@ const moduleFunction = async function(args = {}) {
 	// MAIN FUNCTION
 	
 	const getUserIdentity = async ({ requestBody, districtSpecs }) => {
-
 		const ssoToken = requestBody.qtGetSurePath('user.ssoToken');
 
 		const ssoAccount = await FINALFUNCTION({ ssoToken, districtSpecs });
