@@ -17,16 +17,17 @@ const fs = require('fs');
 const util = require('util');
 
 const samlify = require('samlify');
+const xmljs = require('xml-js');
 
 // START OF moduleFunction() ============================================================
 
-const moduleFunction = async function({systemConfig} = {}) {
+const moduleFunction = async function({ systemConfig } = {}) {
 	// ====================================================================================
 	// UTILITY FUNCTIONS
 
 	const axios = require('axios');
 	
-	const {baseUrl}=systemConfig;
+	const { baseUrl } = systemConfig;
 
 	let ihpcSamlAppXml;
 	const initXml = async districtSpecs => {
@@ -38,6 +39,11 @@ const moduleFunction = async function({systemConfig} = {}) {
 		try {
 			const url = xmlUrl;
 			const response = await axios.get(url);
+			
+			// const samlSpecs = xmljs.xml2js(response.data, { compact: true });
+			// console.dir({['samlSpecs']:samlSpecs}, { showHidden: false, depth: 8, colors: true });
+
+			
 			ihpcSamlAppXml = response.data; //save to cache/closure variable
 		} catch (error) {
 			throw new Error(
@@ -62,19 +68,21 @@ const moduleFunction = async function({systemConfig} = {}) {
 		await initXml(districtSpecs); // initializes cache/closure variable ihpcSamlAppXml
 
 		samlify.setSchemaValidator({
-			validate: response => {
+			validate: responseXml => {
+				// I don't see anything useful here. I'll leave xml-js in so that I can easily inspect later.
+				// const response = xmljs.xml2js(responseXml, { compact: true });
+				
 				/* implment your own or always returns a resolved promise to skip */
 				return Promise.resolve('skipped');
 			}
 		});
-
-
+		
 		const assertionConsumerService = [
 			{
 				Binding: samlify.Constants.namespace.post,
-				Location: `${baseUrl}/SSO/saml/`, 
+				Location: `${baseUrl}x/SSO/saml/`
 			}
-		];// I think none of this is required.
+		]; // I think none of this is required.
 
 		const serviceProvider = samlify.ServiceProvider({
 			...districtSpecs.authOptions,

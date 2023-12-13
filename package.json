@@ -18,7 +18,8 @@
     "qtfunctionallib": "file:node_modules_local_repo/qtFunctionalLib",
     "qtools": "file:node_modules_local_repo/qtools",
     "qtools-functional-library": "^1.1.7",
-    "qtools-parse-command-line": "^1.0.5"
+    "qtools-parse-command-line": "^1.0.5",
+    "xml-js": "^1.6.11"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
