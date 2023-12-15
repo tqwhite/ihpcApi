@@ -62,7 +62,7 @@ const moduleFunction = async function({ systemConfig } = {}) {
 		req
 	}) => {
 		console.log(
-			`\n=-=============   FINALFUNCTION  ========================= [azure-msal-saml.js.moduleFunction]\n`
+			`\n=-=============   FINALFUNCTION SAML ========================= [azure-msal-saml.js.moduleFunction]\n`
 		);
 
 		await initXml(districtSpecs); // initializes cache/closure variable ihpcSamlAppXml
