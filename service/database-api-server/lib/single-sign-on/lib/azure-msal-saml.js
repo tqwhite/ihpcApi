@@ -38,12 +38,10 @@ const moduleFunction = async function({ systemConfig = {}, district } = {}) {
 			console.log('using cached SAML XML');
 			return;
 		}
-console.dir({['districtSpecs']:districtSpecs}, { showHidden: false, depth: 4, colors: true });
 
 		const { xmlUrl } = districtSpecs;
 		try {
 			const url = xmlUrl;
-console.log(`url=${url}`);
 
 			const response = await axios.get(url);
 
@@ -124,16 +122,16 @@ console.log(`url=${url}`);
 			userDetails = extract.attributes;
 
 			// prettier-ignore
-						{
-							console.log(
-								`\n=-=============   userDetails  ========================= [azure-msal-saml.js.moduleFunction]\n`
-							);
-							console.dir( { ['userDetails']: userDetails }, { showHidden: false, depth: 4, colors: true } );
-							console.log(`Identity validation based on: '${userPropertyName}'`);
-							console.log(
-								`\n=-=============   userDetails  ========================= [azure-msal-saml.js.moduleFunction]\n`
-							);
-						}
+// 						{
+// 							console.log(
+// 								`\n=-=============   userDetails  ========================= [azure-msal-saml.js.moduleFunction]\n`
+// 							);
+// 							console.dir( { ['userDetails']: userDetails }, { showHidden: false, depth: 4, colors: true } );
+// 							console.log(`Identity validation based on: '${userPropertyName}'`);
+// 							console.log(
+// 								`\n=-=============   userDetails  ========================= [azure-msal-saml.js.moduleFunction]\n`
+// 							);
+// 						}
 		} catch (error) {
 			console.error('Error processing SAML Response:', error);
 		}
