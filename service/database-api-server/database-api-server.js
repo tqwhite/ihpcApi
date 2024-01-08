@@ -101,7 +101,7 @@ console.log(`this.config.database.connectionString=${this.config.database.connec
 		startList.push((done) => {
 			const workerName = 'session'
 			new sessionsGen({
-				singleSignOn:singleSignOnActual({config: this.config}),
+				singleSignOn:singleSignOnActual({config: this.config, apiManager:this.apiManager}),
 				config: this.config,
 				router: this.router,
 				apiManager:this.apiManager.init(workerName),

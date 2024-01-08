@@ -13,11 +13,11 @@ const generateKeyPair = promisify(crypto.generateKeyPair);
 
 //START OF moduleFunction() ============================================================
 
-var moduleFunction = function({ config: allConfigs }) {
-
+var moduleFunction = ({ config: allConfigs, apiManager }) => ()=> {
 	const localConfig = allConfigs['single-sign-on'];
-	const systemConfig=allConfigs['system'];
-
+	const systemConfig = allConfigs['system'];
+	
+	
 	let keyAlreadyExistsFlag = false;
 	async function generateKeys(tmpKey) {
 		if (keyAlreadyExistsFlag) {
@@ -47,7 +47,7 @@ var moduleFunction = function({ config: allConfigs }) {
 	// ==========================================================================
 	// GATHER DISTRICT CONFIGS
 
-	const districtConfigurations = {};
+	
 
 	const isNumeric = str => {
 		return !isNaN(parseFloat(str)) && isFinite(str);
@@ -59,7 +59,6 @@ var moduleFunction = function({ config: allConfigs }) {
 	};
 
 	const conditionConfigElements = (inObject, tmpKey) => {
-
 		const outObj = {};
 		Object.keys(inObject).forEach(name => {
 			let value = inObject[name];
@@ -74,7 +73,9 @@ var moduleFunction = function({ config: allConfigs }) {
 
 			if (value.toString().match(/tmpKey/)) {
 				//value = tmpKey;
-				console.log(`Warning: msal apparently does not need private keys; omitting from ${name}`)
+				console.log(
+					`Warning: msal apparently does not need private keys; omitting from ${name}`
+				);
 			}
 
 			switch (value) {
@@ -91,66 +92,73 @@ var moduleFunction = function({ config: allConfigs }) {
 
 		return outObj;
 	};
-
-
+	
 	// ==========================================================================
 	// INIT ASYNC PARTS OF DISTRICT MAPPING
 	
 	let districtConfigsAlreadyInit = false;
+	let districtConfigurations = {};
+	const newConfiguration = {};
+	
 	const initDistrictMapping = async () => {
 		if (districtConfigsAlreadyInit) {
 			console.log('using cached SSO parameters');
 			return;
 		}
 
-		districtConfigsAlreadyInit = true;
+		const getDistrict = promisify(
+			apiManager.getApi(
+				'databaseApiServer.bookNumbers.users.session.boilerplate.payment.transfer.students.districts.getAllDistricts'
+			)
+		);
 
-		// let keys;
-		//keys = await generateKeys(keys);
-		const tmpKey = undefined; //keys.privateKey;
-		console.log(`Warning: msal apparently does not need private keys; omitting them even if in config`)
+		const initDistrictConfigurations = async districts => {
+			districtConfigsAlreadyInit = true;
 
-		Object.keys(localConfig.configRedirectNameGroupList)
-			.map(inx => localConfig.configRedirectNameGroupList[inx])
-			.map(configItem => ({
-				...getDistrictConfig(allConfigs, configItem.configName),
-				configName: configItem.configName,
-				districtId: configItem.districtId
-			}))
-			.map(configItem => conditionConfigElements(configItem, tmpKey))
-			.forEach(item => (districtConfigurations[item.districtId] = item));
+			districts.forEach(async dbDistrict => {
+				const district = dbDistrict.toObject();
 
-		// prettier-ignore
-		Object.keys(districtConfigurations).forEach(
-			async name=>{
-				const modulePath=`./lib/${districtConfigurations[name].providerSpecificModuleName}`;
-				const moduleInstance=districtConfigurations[name].providerSpecificModule=await require(modulePath)({systemConfig});
-				districtConfigurations[name].providerSpecificModule=moduleInstance;
-			})
+				if (!district.ssoParameters.ssoModuleName) {
+					return;
+				}
+
+				newConfiguration[district.districtId] = {
+					...district.ssoParameters,
+					districtId: district.districtId,
+					providerSpecificModuleName: district.ssoParameters.ssoModuleName,
+					authOptions: { entityId: district.ssoParameters.entityId }
+				};
+				const modulePath = `./lib/${district.ssoParameters.ssoModuleName}`;
+				newConfiguration[
+					district.districtId
+				].providerSpecificModule = await require(modulePath)({
+					systemConfig,
+					district
+				});
+			});
+		};
+
+		const districts = await getDistrict();
+		await initDistrictConfigurations(districts);
+		//		districtConfigurations=newConfiguration;
 	};
 
 	// ==========================================================================
 	// GET USER FROM IDENTITY PROVIDER
 
-	const getUserFromIdentityProvider = async req => {
-		console.log(
-			`\n=-=============   getUserFromIdentityProvider  ========================= [single-sign-on.js.moduleFunction]\n`
-		);
-
-		await initDistrictMapping(); // initializes cache/closure variable districtConfigurations
-
+	const getSpecificIdentityProvider = async req => {
 		const requestBody = req.body;
 
 		const districtId = requestBody.qtGetSurePath('user.districtId');
-		const districtSpecs = districtConfigurations[districtId];
-
+		const districtSpecs = newConfiguration[districtId];
+		
 		// ACCESS ACTUAL PROVIDER ==================================================
 
-		const { providerSpecificModule } = districtSpecs;
+		const { providerSpecificModule, getRedirectUrl } = districtSpecs;
+
 		const ssoResult = await providerSpecificModule
 			.getUserIdentity({
 				requestBody,
-				districtSpecs,
 				req
 			})
 			.catch(error => {
@@ -159,10 +167,17 @@ var moduleFunction = function({ config: allConfigs }) {
 				);
 			});
 
-		return { ...ssoResult, providerSpecificModule, districtSpecs };
+		return { ...ssoResult, providerSpecificModule };
+	};
+	
+	const getProvider = async districtId => {
+		await initDistrictMapping(); // initializes cache/closure variable districtConfigurations
+		const districtSpecs = newConfiguration[districtId];
+		const { providerSpecificModule: ssoProvider } = districtSpecs;
+		return { ssoProvider, districtSpecs };
 	};
 
-	return { getUserFromIdentityProvider };
+	return { getSpecificIdentityProvider, getProvider };
 };
 
 //END OF moduleFunction() ============================================================
